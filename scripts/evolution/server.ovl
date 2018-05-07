@@ -1,0 +1,1513 @@
+// findNextCycleMission ( %MisionName, %MissionType )
+// Info: gets next mission in cycle
+function findNextCycleMission()
+{
+   if(( $Host::TournamentMode && $Host::EvoTourneySameMap) || (!$Host::TournamentMode && $Host::EvoOneMapOnly))
+      return $CurrentMission;
+
+   // Cached results, so for one map, the 'nextcyclemission' will
+   // always return the same value
+   if (($EvoCachedCurrentMission $= $CurrentMission) && ($EvoCachedCurrentMissionType $= $CurrentMissionType) && ($EvoCachedCurrentNoBots == ($HostGameBotCount != 0)))
+   {
+      return $EvoCachedNextMission;
+   }
+   %NextMission = getNextMission( $CurrentMission, $CurrentMissionType );
+   // If there was no next mission to be found, repeat this mission.
+   // That's better at least than loading a map players online might not
+   // possess.
+   if (%NextMission == -1)
+   {
+      %ReturnValue = $CurrentMission;
+   }
+   else
+   {
+      %ReturnValue = $HostMissionFile[ getNextMission( $CurrentMission, $CurrentMissionType ) ];
+   }
+
+   // Cache results for next call
+   $EvoCachedCurrentMission = $CurrentMission;
+   $EvoCachedCurrentMissionType = $CurrentMissionType;
+   $EvoCachedCurrentNoBots = ( $HostGameBotCount != 0 );
+   $EvoCachedNextMission = %ReturnValue;
+   return %ReturnValue;
+}
+
+// CycleMission()
+// Info: added option to Stay on Same Map in Tournament Mode
+function CycleMissions()
+{
+  if(Game.scheduleVote !$= "") // a vote is still running, stop it
+    stopCurrentVote();
+   
+   if($Evo::ETMMode) // ETM mode stuff
+   {
+      $ETMCMap = $ETMmode::CurrentMap;
+      if($ETMCMap != 1)
+         messageAll('MsgClient', 'Loading %1 (%2)...', $ETMmode::MapDisplayName[$ETMCMap], $ETMmode::MapDisplayType[$ETMCMap]);
+
+      loadMission($ETMmode::missionName[$ETMCMap], $ETMmode::missionType[$ETMCMap]);
+      $ETMmode::CurrentMap++;
+   }
+   else // normal cycle
+      Parent::CycleMissions();
+} 
+
+// onConnect(%client, %name, %raceGender, %skin, %voice, %voicePitch)
+// Info: Check for: auto-pw, full server pw, no base rape and some other things
+function GameConnection::onConnect(%client, %name, %raceGender, %skin, %voice, %voicePitch)
+{
+   // Call the standard procedure ...
+   Parent::onConnect( %client, %name, %raceGender, %skin, %voice, %voicePitch );
+
+   // Log the connection
+   connectLog(%client);
+ 
+   // Initialize Pizza Client if present
+   messageClient( %client, 'MsgPizzaJoin', "" );
+
+   // Now that we're through this, we will start the custom ban procedure
+   // check if the clan is allowed to play here
+   for(%i = 0; %i <= $EvoBanClanCount; %i++)
+   {
+      if($EvoBanClan[%i] !$= "")
+   	{
+	   if ( EvoIsClientInClan( %client, $EvoBanClan[%i]) )
+	   {
+	      messageClient(%client, 'onClientKicked', "");
+	      messageAllExcept(%client, -1, 'MsgClientDrop', "", %client.name, %client);
+	      
+	      if(isObject(%client.player))
+		%client.player.scriptKill(0);
+	      
+	      if(isObject(%client))
+		{
+               %client.setDisconnectReason("Your clan is not allowed to play here.");
+               %client.schedule(700, "delete");
+               return;
+            }
+         }
+      }
+   }
+  
+   // check if the player is allowed to play here
+   for(%x = 0; %x <= $EvoBanPlayerCount; %x++)
+   {
+      if($EvoBanPlayer[%x] !$= "")
+   	{
+	   if(%client.guid $= getWord($EvoBanPlayer[%x], 1))
+	   {
+	      messageClient(%client, 'onClientKicked', "");
+	      messageAllExcept(%client, -1, 'MsgClientDrop', "", %client.name, %client);
+	      
+	      if(isObject(%client.player))
+		%client.player.scriptKill(0);
+	      
+	      if(isObject(%client))
+		{
+		  %client.setDisconnectReason("You are not allowed to play here.");
+		  %client.schedule(700, "delete");
+		  return;
+		}
+	   }
+      }
+   }
+   // If AutoPW is enabled, the variables are set correctly AND
+   // the threshold is reached, set the auto PW
+   if($Host::ClassicAutoPWEnabled)
+   {
+      if( ($Host::ClassicAutoPWPlayerCount != 0 && $Host::ClassicAutoPWPlayerCount !$= "" ) && 
+        ($HostGamePlayerCount >= $Host::ClassicAutoPWPlayerCount) && (!$Host::TournamentMode || 
+	  ($Host::TournamentMode && $Host::Password !$= "")))
+      {
+         AutoPWServer(1);
+      }
+   }
+     
+   // If serverFull PW is enabled, AND MaxPlayers is reached,
+   // set the server full pw
+   if($Host::EvoFullServerPWEnabled)
+   {
+      if(!$Host::TournamentMode && $HostGamePlayerCount == $MaxPlayers)
+	{
+	   FullServerPW(1);
+	}
+   }
+
+   // If No Base Rape is activated
+   //if($Host::EvoNoBaseRapeEnabled)
+   //{
+      // The following #ifdef allows to define separate variables for base and
+      // classic
+      //if( !$Host::TournamentMode && ($Host::EvoNoBaseRapeClassicPlayerCount != 0) && 
+	  //($Host::EvoNoBaseRapeClassicPlayerCount !$= "") && (EvoPlayersOnTeamCount() >= $Host::EvoNoBaseRapeClassicPlayerCount))
+      //{
+         //$EvoNoBaseRape = 0;
+      //}
+   //}
+}
+
+// onDrop(%client, %reason)
+// Info: Check for: auto-pw, full server pw, no base rape and some other things
+//
+// NOTE: We do not use the parent::onDrop call here, because it contains 
+//       a call to reset the server, which we want to handle our own way
+//       instead of what is coded there.
+//       Hence, the first part is almost identical to what GarageGames coded.
+function GameConnection::onDrop(%client, %reason)
+{
+   if(isObject(Game))
+      Game.onClientLeaveGame(%client);
+
+   // make sure that tagged string of player name is not used
+   if($CurrentMissionType !$= "SinglePlayer")
+       messageAllExcept(%client, -1, 'MsgClientDrop', '\c1%1 has left the game.', getTaggedString(%client.name), %client);
+   else
+       messageAllExcept(%client, -1, 'MsgClientDrop', "", getTaggedString(%client.name), %client);
+
+   if(isObject(%client.camera))
+       %client.camera.delete();
+
+   // z0dd - ZOD, 6/19/02. Strip the hit sound tags
+   removeTaggedString(%client.playerHitWav);
+   removeTaggedString(%client.vehicleHitWav);
+   removeTaggedString(%client.name);
+   removeTaggedString(%client.voiceTag);
+   removeTaggedString(%client.skin);
+   freeClientTarget(%client);
+
+   echo("CDROP: " @ %client @ " " @ %client.getAddress());
+   $HostGamePlayerCount--;
+
+   // z0dd - ZOD, 5/05/04. Add a bot for every client drop if balanced bots are set
+   if( $Host::BotsEnabled )
+   {
+      if($Host::ClassicBalancedBots)
+      {
+         if(!%client.isAIControlled())
+         {
+            if (serverCanAddBot())
+            {
+               aiConnectMultiple( 1, $Host::MinBotDifficulty, $Host::MaxBotDifficulty, -1 );
+               $HostGameBotCount++;
+            }
+         }
+      }
+   }
+   if($Host::ClassicAutoPWEnabled)
+   {
+      if( ($HostGamePlayerCount < $Host::ClassicAutoPWPlayerCount) &&
+	   (!$Host::TournamentMode || ($Host::TournamentMode && !$Host::EvoAutoPWTourneyNoRemove)))
+	{
+	   AutoPWServer(0);
+	}
+   }
+   if($Host::EvoFullServerPWEnabled)
+   {
+      if($HostGamePlayerCount == ($MaxPlayers - 1))
+	{
+	   FullServerPW(0);
+	}
+   }
+   //if($Host::EvoNoBaseRapeEnabled)
+   //{
+      //if(!$Host::TournamentMode && 
+	  //(EvoPlayersOnTeamCount() < $Host::EvoNoBaseRapeClassicPlayerCount))
+	//{
+	   //$EvoNoBaseRape = 1;
+	//}
+   //}
+   // Reset the server if everyone has left the game
+   if((($HostGamePlayerCount - $HostGameBotCount) == 0) && $Host::Dedicated && !$resettingServer && !$LoadingMission)
+   {
+      if($Evo::ETMMode)
+	{
+	   $Evo::ETMMode = false;
+	   ETMreset();
+	}     
+      schedule(10, 0, "resetServerDefaults");
+	// Instead of simply resetting the defaults, reinitialize the
+	// entire server...
+	// ReallyQuit();
+   }
+	
+}
+
+// loadMission( %missionName, %missionType, %firstMission )
+// Info: Delete stats variables, load new flag stats and some other things
+function loadMission(%missionName, %missionType, %firstMission)
+{
+   // Prevents server to switch to a map that isn't in the cycle
+   if(!$Host::TournamentMode && $Host::EvoCustomMapRotation)
+   {
+      if(!checkMapExist(%missionName, %missionType) || ($Host::MapFFA[%missionName, %missionType] !$= "" && $Host::MapFFA[%missionName, %missionType] == 0 ))
+	{
+         for(%mis = 0; %mis < $HostMissionCount; %mis++)
+         {
+            for(%type = 0; %type < $HostTypeCount; %type++)
+            {
+               for(%i = 0; %i < $HostMissionCount[%type]; %i++)
+               {
+                  // Find a valid mission to change to
+                  if($HostMission[%type, %i] == %mis)
+                  {
+                     %missionName = $HostMissionFile[%mis];
+                     %missionType = $HostTypeName[%type];
+                     if($Host::MapFFA[%missionName, %missionType] != 0 && $HostTypeName[%type] $= $CurrentMissionType)
+                        break; // it's a valid mission
+                  }
+               }
+               if((%missionName $= $HostMissionFile[%mis]) && (%missionType $= $HostTypeName[%type]))
+                  if($Host::MapFFA[%missionName, %missionType] != 0 && $HostTypeName[%type] $= $CurrentMissionType)
+                     break; // it's a valid mission
+            }
+            if((%missionName $= $HostMissionFile[%mis]) && (%missionType $= $HostTypeName[%type]))
+               if($Host::MapFFA[%missionName, %missionType] != 0 && $HostTypeName[%type] $= $CurrentMissionType)
+                  break; // it's a valid mission
+         }
+      }
+   }
+   if($AutoRestart) // z0dd - ZOD, 3/26/02. Auto restart server after a specified time.
+   {
+      $AutoRestart = 0;
+      messageAll( 'MsgServerRestart', '\c2SERVER IS AUTO REBOOTING! COME BACK IN 5 MINUTES.~wfx/misc/red_alert.wav');
+      logEcho("Auto server restart commencing.");
+      schedule(10000, 0, quit);
+   }
+  
+   // z0dd - ZOD, 9/13/02. TR2 needs this.
+   if(%missionType $= "TR2")
+   {
+      $_Camera::movementSpeed = $Camera::movementSpeed;
+      $Camera::movementSpeed = 80;
+   }
+   else
+   {
+      %val = ($_Camera::movementSpeed $= "") ? $Classic::cameraSpeed : $_Camera::movementSpeed; // z0dd - ZOD, 9/13/02. Classic camera speed.
+      $Camera::movementSpeed = %val;
+   }
+  
+   $LoadingMission = true;
+   disableCyclingConnections(true);
+  
+   if(!$pref::NoClearConsole)
+     cls();
+  
+   if(isObject(LoadingGui))   
+     LoadingGui.gotLoadInfo = "";
+   buildLoadInfo(%missionName, %missionType);
+  
+   // reset all of these
+   ClearCenterPrintAll();
+   ClearBottomPrintAll();
+  
+   if($Host::TournamentMode)
+      resetTournamentPlayers();
+  
+   // Send load info to all the connected clients:
+   for(%cl = 0; %cl < ClientGroup.getCount(); %cl++)
+   {
+      %client = ClientGroup.getObject( %cl );
+      
+      if(!%client.isAIControlled())
+	sendLoadInfoToClient(%client);
+   }
+
+   // Reset maximum turret counters to their defaults
+   $TeamDeployableMin[TurretIndoorDeployable] = 4;
+   $TeamDeployableMin[TurretOutdoorDeployable] = 4;
+  
+   // Remove Mission Temporary Evolution Variables
+   for ( %counter = 0; %counter <= Game.numTeams; %counter ++ )
+   {
+      EvoRemoveTempTeamName( %counter );
+   }
+   deleteVariables("$Evo::ThisMission::*");
+
+   if($Host::EvoStats)
+   {
+      // Erase stats from last map 
+      deleteVariables("$Evo::*stats::*");
+      
+      // Works only for CTF
+      if(%missionType $= "CTF")
+	{
+	   // Thanks to Khazad for this code
+	   // Set Filename
+	   %fileIn = "stats/maps/classic/" @ %missionType @ "/" @ %missionName @ ".txt";
+	  
+	   // Initialize the file if not exist
+	   if(!isFile(%fileIn))
+	   {
+	      $Evo::flagstats::heldTeam1 = 0;
+	      $Evo::flagstats::realTeam1 = 0;
+	      $Evo::flagstats::nickTeam1 = 0;
+	      $Evo::flagstats::heldTeam2 = 0;
+	      $Evo::flagstats::realTeam2 = 0;
+	      $Evo::flagstats::nickTeam2 = 0;
+	      export("$Evo::flagstats::*", "stats/maps/classic/" @ %missionType @ "/" @ %missionName @ ".txt", false);
+	   }
+	   // Khazad: Now load the new stats, perhaps call compile first? 
+	   // Khazad: this should overwrite whatever stats we have now.
+	   exec(%fileIn);
+	}
+   }
+
+   // reset the default time limit if changed
+   if($Evo_DefaultTimeLimit)
+   {
+      $Host::TimeLimit = $EvoDefaultTimeLimit;
+      $Evo_DefaultTimeLimit = 0;
+   }
+   // allow load condition to exit out
+   schedule(0, ServerGroup, loadMissionStage1, %missionName, %missionType, %firstMission);
+}
+
+// serverCmdMissionStartPhase3Done(%client, %seq)
+// Info: On Join, centerprint the Message of the day
+function serverCmdMissionStartPhase3Done(%client, %seq)
+{
+   if(%seq != $missionSequence || !$MissionRunning)
+      return;
+
+   if(%client.currentPhase != 3)
+      return;
+
+   %client.currentPhase = 4;
+   %client.isReady = true;
+   Game.clientMissionDropReady(%client);
+   // %client.tricon == 1 means: client found, but no message yet
+   if ( !%client.pizza && %client.tricon == 1 )
+   {
+       messageClient( %client, "", "\c2Tricon2 client registered." );
+       %client.tricon = 2; // %client.tricon == 2 : found and message printed
+   }
+   if(!$Host::TournamentMode && !%client.motd && $Host::EvoMOTD !$= "")
+   {
+   	centerprint(%client, $Host::EvoMOTD, $Host::EvoMOTDtime, $Host::EvoMOTDlines);
+   	%client.motd = true;
+   }
+   else if($Host::TournamentMode)
+      %client.motd = true;
+}
+
+// serverCmdSAD( %client, %password )
+// Info: Different password for Admin and SuperAdmin	
+function serverCmdSAD( %client, %password )
+{
+   if(%password $= "")
+   {
+      messageClient(%client, 'MsgPasswordFailed', '\c2You did not supply a PW.');
+      return;
+   }
+   switch$(%password)
+   {
+      case "logout":
+         if (!%client.isAdmin)
+         {
+	      messageClient( %client, 'MsgPasswordFailed', '\c2You have no admin privileges to give up.');
+	      return;
+         }
+         %client.isAdmin = false;
+         %client.isSuperAdmin = false;
+         %adminmsg = " has given up "@(%client.sex $= "Male" ? "his" : "her")@" admin privileges.";
+         messageAll('MsgStripAdminPlayer', '\c3%2\c2 has given up admin privileges.', %client.name, %client.name, %client );
+         if ( %client.pizza )
+         {
+	      sendPizzaHudUpdate( %game, %client, "" );
+         } 
+
+         adminLog( %client, %adminmsg );
+         LogEcho ( %client.nameBase @ %adminmsg );
+
+      case $Host::AdminPassword:
+         if(!%client.isAdmin)
+         {
+	      if(%password $= "changeme")
+	      {
+	         messageClient(%client, 'MsgPasswordFailed', '\c2Illegal Admin PW. You need to change the default \"$Host::AdminPassword\" value in \"evo_prefs.cs\"!');
+	         return;
+	      }
+	      %client.isAdmin = true;
+	      %client.isSuperAdmin = false;
+	      messageAll('MsgAdminAdminPlayer', '\c3%2 \c2has become an Admin by force.', %client, %client.name);
+	      if ( %client.pizza )
+	      {
+	         sendPizzaHudUpdate( %game, %client, "" );
+	      }
+	      %adminmsg = " has become an Admin by force.";
+	      adminLog(%client, %adminmsg);
+	      logEcho(%client.nameBase @ " has become an Admin by force.");
+         }
+
+      case $Host::ClassicSuperAdminPassword:
+         if(!%client.isSuperAdmin)
+         {
+	      if(%password $= "changeme")
+	      {
+	         messageClient(%client, 'MsgPasswordFailed', '\c2Illegal SAD PW. You need to change the default \"$Host::ClassicSuperAdminPassword\" value in \"evo_prefs.cs\"!');
+	         return;
+	      }
+	      %client.isAdmin = true;
+	      %client.isSuperAdmin = true;
+	      messageAll('MsgSuperAdminPlayer', '\c3%2 \c2has become a Super Admin by force.', %client, %client.name);
+            if ( %client.pizza )
+	      {
+	         sendPizzaHudUpdate( %game, %client, "" );
+	      }
+	      %adminmsg = " has become a Super Admin by force.";
+	      adminLog(%client, %adminmsg);
+	      logEcho(%client.nameBase @ " has become a Super Admin by force.");
+         }	       
+     
+      default:
+         messageClient(%client, 'MsgPasswordFailed', '\c2Illegal SAD PW.');
+         %client.SadAttempts++;
+         if(%client.SadAttempts >= 6 && !%client.isSuperAdmin)
+         {
+            %client.getAddress();
+            %client.getAuthInfo();
+            messageClient(%client, 'onClientBanned', 'For attempting to exploit SAD to gain unauthorized Admin by entering\ntoo many passwords, you are being Banned');
+            if( isObject(%client.player) )
+            {
+               %client.player.scriptKill(0);
+               %client.schedule(700, "delete");
+            }
+            schedule(10, %client @ "ResetSadAttp", %client);
+            %client.setDisconnectReason( 'For attempting to exploit SAD to gain unauthorized Admin by entering\ntoo many passwords, you are being Banned.' );
+            %client.schedule(700, "delete");
+            BanList::add(%client.guid, %client.getAddress(), $Host::BanTime);
+            logEcho(%client.nameBase @ " " @ %client.guid @ " has been banned for excessive use of SAD");
+         }
+   }
+}
+
+// serverCmdSADSetPassword(%client, %password)
+// Info: Now change the server password 
+function serverCmdSADSetPassword(%client, %password)
+{
+   if(!%client.isAdmin)
+   {
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2Only Admins can use this command.');
+      return;
+   }
+   if(!%client.isSuperAdmin && %client.isAdmin && !$Host::EvoAdminServerPW)
+   {
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2This function is disabled.');
+      return;
+   }
+   if(%password $= "")
+   {
+      messageClient(%client, 'MsgValueFailed', '\c2No Changes. You did not supply a value. Use \"remove\" to remove join pw.');
+      return;
+   }
+   %password = detag(%password);
+   %name = %client.name;
+
+   if(%client.isSuperAdmin)
+   {
+   	if(%password $= "remove")
+   	{
+      	$Host::Password = "";
+      	$BackupPassword = "";
+      }
+      else
+      {
+         $Host::Password = %password;
+         $BackupPassword = %password;
+         if($Host::ClassicAutoPWEnabled)
+         {
+            $Host::ClassicAutoPWEnabled = 0;
+            %msg = "\c2Auto-password disabled.";
+            for(%i = 0; %i < ClientGroup.getCount(); %i++)
+            {
+               %cl = ClientGroup.getObject(%i);
+               if(%cl.pizza && %cl.isSuperAdmin)
+                  sendPizzaHudUpdate(%game, %cl, %msg);
+            }
+         }
+      }
+      export("$Host::*", $serverprefs, false);
+      %adminmsg = " changed the join password to " @ %password;
+      adminLog(%client, %adminmsg);
+      logEcho(%client.nameBase @ " changed the join password.");
+      for(%i = 0; %i < ClientGroup.getCount(); %i++)
+      {
+         %cl = ClientGroup.getObject(%i);
+         if(%cl.isAdmin)
+         {
+         	messageClient(%cl, 'MsgServerPassword', '\c3%1\c2: JOIN PASSWORD CHANGED.~wfx/misc/diagnostic_on.wav', %name);
+            if(%password $= "remove")
+               messageClient(%cl, 'MsgServerPassword', '\c2Join PW removed.');
+            else
+               messageClient(%cl, 'MsgServerPassword', '\c2Join PW changed to: \c3%1\c2.', %password);
+         }
+      }
+   }
+   else if(%client.isAdmin && $Host::EvoAdminServerPW)
+   {
+   	if(%password $= "remove")
+   	{
+         $Host::Password = "";
+         $BackupPassword = "";
+      }
+      else
+      {
+         $Host::Password = %password;
+         $BackupPassword = %password;
+         if($Host::ClassicAutoPWEnabled)
+         {
+            $Host::ClassicAutoPWEnabled = 0;
+            %msg = "\c2Auto-password disabled.";
+            for(%i = 0; %i < ClientGroup.getCount(); %i++)
+            {
+               %cl = ClientGroup.getObject(%i);
+               if(%cl.pizza && %cl.isAdmin)
+                  sendPizzaHudUpdate(%game, %cl, %msg);
+            }
+         }
+      }
+      export("$Host::*", $serverprefs, false);
+      %adminmsg = " changed the join password to " @ %password;
+      adminLog(%client, %adminmsg);
+      logEcho(%client.nameBase @ " changed the join password.");
+      for(%i = 0; %i < ClientGroup.getCount(); %i++)
+      {
+         %cl = ClientGroup.getObject(%i);
+         if(%cl.isAdmin)
+         {
+            messageClient(%cl, 'MsgServerPassword', '\c3%1\c2: JOIN PASSWORD CHANGED.~wfx/misc/diagnostic_on.wav', %name);
+            if(%password $= "remove")
+               messageClient(%cl, 'MsgServerPassword', '\c2Join PW removed.');
+            else
+               messageClient(%cl, 'MsgServerPassword', '\c2Join PW changed to: \c3%1\c2.', %password);
+         }
+      }
+   }
+}
+
+// serverCmdSet(%client, %type, %val)
+// Info: this allow players to use adminHUD in T2 base
+function serverCmdSet(%client, %type, %val)
+{
+   // USAGE: commandToServer('Set', type, value);
+   %type = deTag(%type);
+   %val = deTag(%val);
+
+   if(!%client.isSuperAdmin)
+   {
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2Only Super Admins can use that command.');
+      return;
+   }
+   if(%type $= "")
+   {
+      messageClient(%client, 'MsgTypeFailed', '\c2No Changes. You did not supply a type.');
+      return;
+   }
+   //if( (%val $= "") && (%type !$= "joinpw") )
+   if(%val $= "")
+   {
+      if(%type $= "joinpw")
+         messageClient(%client, 'MsgValueFailed', '\c2No Changes. You did not supply a value. Use \"remove\" to remove join pw.');
+      else
+         messageClient(%client, 'MsgValueFailed', '\c2No Changes. You did not supply a value.');
+      return;
+   }
+   %name = %client.name;
+   switch$(%type)
+   {
+      case "superpw":
+         $Host::ClassicSuperAdminPassword = %val;
+         export( "$Host::*", $serverprefs, false );
+         messageClient(%client, 'MsgSuperPassword', '\c2\"Super Admin\" PW changed to: \c3%1\c2.', addTaggedString(%val));
+         
+         %adminmsg = " changed the Super Admin password to " @ %val;
+         adminLog(%client, %adminmsg);
+         logEcho(%client.nameBase @ " changed the Super Admin password.");
+ 
+      case "adminpw":
+         $Host::AdminPassword = %val;
+         export("$Host::*", $serverprefs, false);
+         messageClient(%client, 'MsgAdminPassword', '\c2\"Admin\" PW changed to: \c3%1\c2.', %val);
+         
+         %adminmsg = " changed the Admin password to " @ %val;
+         adminLog(%client, %adminmsg);
+         logEcho(%client.nameBase @ " changed the Admin password.");
+
+      case "joinpw":
+         if(%val $= "remove")
+         {
+            $Host::Password = "";
+            $BackupPassword = "";
+         }
+         else
+         {
+            $Host::Password = %val;
+            $BackupPassword = %val;
+            
+            if($Host::ClassicAutoPWEnabled)
+            {
+	         $Host::ClassicAutoPWEnabled = 0;
+               %msg = "\c2Auto-password disabled.";
+               for(%i = 0; %i < ClientGroup.getCount(); %i++)
+               {
+                  %cl = ClientGroup.getObject(%i);
+                  if(%cl.pizza && %cl.isSuperAdmin)
+                     sendPizzaHudUpdate(%game, %cl, %msg);
+               }
+            }
+         }
+         export("$Host::*", $serverprefs, false);
+
+         for(%i = 0; %i < ClientGroup.getCount(); %i++)
+         {
+            %cl = ClientGroup.getObject(%i);
+            if(%cl.isAdmin)
+            {
+               messageClient(%cl, 'MsgServerPassword', '\c3%1\c2: JOIN PASSWORD CHANGED.~wfx/misc/diagnostic_on.wav', %name);
+               if(%val $= "remove")
+                  messageClient(%cl, 'MsgServerPassword', '\c2Join PW removed.');
+               else
+                  messageClient(%cl, 'MsgServerPassword', '\c2Join PW changed to: \c3%1\c2.', %val);
+            }
+         }
+         %adminmsg = " changed the join password to " @ %val;
+         adminLog(%client, %adminmsg);
+         logEcho(%client.nameBase @ " changed the join password.");
+
+      case "maxplayers":
+         if(isNumber(%val) && (%val > 0))
+         {
+            $Host::MaxPlayers = %val;
+            export("$Host::*", $serverprefs, false);
+            messageAll('MsgMaxPlayersSet', '\c3%1\c2: PLAYER LIMIT CHANGED TO: \c3%2\c2.~wfx/misc/diagnostic_on.wav', %name, %val);
+            
+            %adminmsg = " changed the Player Limit to " @ %val;
+         	adminLog(%client, %adminmsg);
+            logEcho(%client.nameBase @ " changed the Player Limit.");
+         }
+         else
+            messageClient(%client, 'MsgAdmin', '\c2Value must be a positive number.');
+
+      case "restart":
+         if(%val $= "0")
+         {
+            if(isEventPending($RestartSchedule1))
+            	cancel($RestartSchedule1);
+            if(isEventPending($RestartSchedule2))
+            	cancel($RestartSchedule2);
+            
+            $PizzaHudRestartVar = 0;
+            %msg = "\c3" @ getTaggedString(%name) @ "\c2: SERVER RESTART HAS BEEN CANCELED.~wfx/misc/diagnostic_on.wav";
+            for(%i = 0; %i < ClientGroup.getCount(); %i++)
+            {
+            	%cl = ClientGroup.getObject(%i);
+            	if(%cl.pizza && %cl.isSuperAdmin)
+            		sendPizzaHudUpdate(%game, %cl, %msg);
+            	else
+            		messageClient(%cl, 'MsgAdmin', %msg);
+            }
+            %adminmsg = " canceled a server restart.";
+         	adminLog(%client, %adminmsg);
+            logEcho(%client.nameBase @ " canceled a server restart.");
+         }
+         else if(%val $= "1")
+         {
+         	$PizzaHudRestartVar = 1;
+            %msg = "\c3" @ getTaggedString(%name) @ "\c2: SERVER WILL BE REBOOTING IN 30 SECONDS!~wfx/misc/red_alert.wav";
+            for(%i = 0; %i < ClientGroup.getCount(); %i++)
+            {
+            	%cl = ClientGroup.getObject(%i);
+            	if(%cl.pizza && %cl.isSuperAdmin)
+            		sendPizzaHudUpdate(%game, %cl, %msg);
+            	else
+            		messageClient(%cl, 'MsgAdmin', %msg);
+            }
+            $RestartSchedule1 = schedule(20000, 0, "messageAll", 'MsgServerRestart', '\c2SERVER WILL REBOOT IN 10 SECONDS!~wfx/misc/hunters_10.wav');
+            $RestartSchedule2 = schedule(30000, 0, reallyQuit);
+
+            %adminmsg = " forced a server restart.";
+         	adminLog(%client, %adminmsg);
+            logEcho(%client.nameBase @ " forced a server restart.");
+         }
+         else
+             messageClient(%client, 'MsgAdmin', '\c2Unknown restart value. 0 cancels restart, 1 forces restart.');
+
+      case "random":
+         if(%val $= "0" || %val $= "1")
+         {
+            if($CurrentMissionType $= TR2) // z0dd - ZOD, 9/17/02. Check for Team Rabbit 2
+            {
+               messageClient(%client, 'MsgAdmin', '\c2This feature is unavailable in Team Rabbit 2.');
+               return;
+            }
+            $Host::ClassicRandomizeTeams = $RandomTeams = %val;
+            export("$Host::*", $serverprefs, false);
+            %detail = ($RandomTeams ? "ENABLED" : "DISABLED");
+            %msg = "\c3" @ getTaggedString(%name) @ "\c2: RANDOM TEAMS " @ %detail @ ". Changes will take place next mission.~wfx/misc/diagnostic_on.wav";
+            for(%i = 0; %i < ClientGroup.getCount(); %i++)
+            {
+               %cl = ClientGroup.getObject(%i);
+               if(%cl.pizza && %cl.isSuperAdmin)
+                  sendPizzaHudUpdate(%game, %cl, %msg);
+               else
+                  messageClient(%cl, 'MsgAdmin', %msg);
+            }
+            %adminmsg = " " @ %detail @ " random teams.";
+         	adminLog(%client, %adminmsg);
+            logEcho(%client.nameBase @ " " @ %detail @ " random teams.");
+         }
+         else
+            messageClient( %client, 'MsgAdmin', '\c2Unknown input value. 0 disables Random Teams, 1 enables Random Teams.' );
+
+      case "fairteams":
+         if(%val $= "0" || %val $= "1")
+         {
+            $Host::ClassicFairTeams = %val;
+            export("$Host::*", $serverprefs, false);
+            %detail = ($Host::ClassicFairTeams ? "ENABLED" : "DISABLED");
+            %msg = "\c3" @ getTaggedString(%name) @ "\c2: FAIR TEAMS " @ %detail @ ".~wfx/misc/diagnostic_on.wav";
+
+            for(%i = 0; %i < ClientGroup.getCount(); %i++)
+            {
+            	%cl = ClientGroup.getObject(%i);
+            	if(%cl.pizza && %cl.isSuperAdmin)
+            		sendPizzaHudUpdate(%game, %cl, %msg);
+            	else
+            		messageClient(%cl, 'MsgAdmin', %msg);
+            }
+            %adminmsg = " " @ %detail @ " fair teams.";
+         	adminLog(%client, %adminmsg);
+            logEcho(%client.nameBase @ " " @ %detail @ " fair teams.");
+         }
+         else
+            messageClient(%client, 'MsgAdmin', '\c2Unknown input value. 0 disables Fair Teams, 1 enables Fair Teams.');
+
+      case "consolecmd":
+         if($Host::ClassicAllowConsoleAccess)
+         {
+            eval(%val);
+            messageClient( %client, 'MsgAdmin', '\c2Command %1 sent to server console.', %val );
+            logEcho(%client.nameBase @ "Send the console command " @ %val  @ " to the server.", 1);
+         }
+
+      default:
+         messageClient(%client, 'MsgValueFailed', '\c2No Changes. You did not specify a valid type.');
+   }
+}
+
+// AutoPWServer(%val)
+// Info: Handle AutoPW
+function AutoPWServer(%val)
+{
+   if(%val && ($Host::ClassicAutoPWPassword !$= "changeit"))
+   {
+      $Host::Password = $Host::ClassicAutoPWPassword;
+   }
+   else if($BackupPassword !$= "")
+   {
+   	$Host::Password = $BackupPassword; // if there was one, restore the old password
+   }
+   else
+   {
+      $Host::Password = "";
+   }
+}
+
+// serverCmdAutoPWSetup(%client, %type, %val)
+// Info: Auto-password the server reaching a specific number of player
+function serverCmdAutoPWSetup(%client, %type, %val)
+{
+   %type = detag(%type);
+   %val = detag(%val);
+
+   if(!%client.isSuperAdmin)
+   {
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2Only Super Admins can use this command.');
+      return;
+   }
+   if(%type $= "")
+   {
+      messageClient(%client, 'MsgTypeFailed', '\c2No Changes. You did not supply a type.');
+      return;
+   }
+   switch$(%type)
+   {
+      case "autopw":
+         if(%val $= "0")
+         {
+             $Host::ClassicAutoPWEnabled = 0;
+             AutoPWServer(0);
+
+             %msg = "\c2Auto-password disabled.";
+             for(%i = 0; %i < ClientGroup.getCount(); %i++)
+             {
+             	 %cl = ClientGroup.getObject(%i);
+            	 if(%cl.pizza && %cl.isSuperAdmin)
+            		 sendPizzaHudUpdate(%game, %cl, %msg);
+             }
+             %adminmsg = " DISABLED Auto-password.";
+         	 adminLog(%client, %adminmsg);
+             logEcho(%client.nameBase @ " disabled Auto-password.");
+         }
+         else if (%val $= "1")
+         {
+             $Host::ClassicAutoPWEnabled = 1;
+
+             %msg = "\c2Auto-password enabled.";
+             for(%i = 0; %i < ClientGroup.getCount(); %i++)
+             {
+             	 %cl = ClientGroup.getObject(%i);
+            	 if(%cl.pizza && %cl.isSuperAdmin)
+            		 sendPizzaHudUpdate(%game, %cl, %msg);
+             }
+             %adminmsg = " ENABLED Auto-password.";
+	     adminLog(%client, %adminmsg);
+             logEcho(%client.nameBase @ " enabled Auto-password.");
+         }
+         else
+             messageClient( %client, 'MsgAdmin', '\c2Unknown value. 0 disables Auto-password, 1 enables Auto-password.' );
+
+      case "autopwpass":
+         if(%val !$= "" && %val !$= "changeit")
+         {
+            $Host::ClassicAutoPWPassword = %val;
+         }
+         else if(%val $= "changeit")
+         {
+         	messageClient(%client, 'MsgPasswordFailed', '\c2Illegal PW. Please choose another password.');
+            return;
+         }
+         else
+         {
+            messageClient(%client, 'MsgAdmin', '\c2You must specify a password.');
+            return;
+         }
+         export( "$Host::*", $serverprefs, false );
+         messageClient(%client, 'MsgServerPassword', '\c2Server Auto-password PW changed to: \c3%1\c2.', %val);
+         %adminmsg = " changed the Auto-password PW to " @ %val;
+         adminLog(%client, %adminmsg);
+         logEcho(%client.nameBase @ " changed the Auto-password PW.");
+
+      case "autopwcount":
+         if(isNumber(%val) && (%val !$= "") && (%val > 0))
+         {
+            $Host::ClassicAutoPWPlayerCount = %val;
+         }
+         else
+         {
+            messageClient( %client, 'MsgAdmin', '\c2You must specify a numerical value.' );
+            return;
+         }
+         export( "$Host::*", $serverprefs, false );
+         messageClient(%client, 'MsgServerPassword', '\c2Server Auto-password player count changed to: \c3%1\c2.', %val);
+         %adminmsg = " changed the Auto-password player count to " @ %val;
+         adminLog(%client, %adminmsg);
+         logEcho(%client.nameBase @ " changed the Auto-password player count.");
+   }
+}
+
+// serverCmdClientJoinTeam(%client, %team)
+// Info: Allow fair teams option
+function serverCmdClientJoinTeam(%client, %team, %admin)
+{
+   // z0dd - ZOD, 4/10/04. ilys - if the client does not enter a team, uses a team less than -1,
+   // more than the number of teams for the gametype or zero, set his team to -1 (switch)
+   if(%team $= "" || %team < -1 || %team == 0 || %team > Game.numTeams)
+      %team = -1;
+
+   if(%team == -1)
+   {
+      if(%client.team == 1)
+         %team = 2;
+      else
+         %team = 1;
+   }
+   if(isObject(Game) && Game.kickClient != %client)
+   {
+   	if(%client.team != %team)
+   	{
+         if($Host::ClassicFairTeams && !%client.isAdmin && $CurrentMissionType !$= TR2)
+         {
+            %otherTeam = %team == 1 ? 2 : 1;
+            if((!%admin.isAdmin) && (%team != 0) && (($TeamRank[%team, count]+1) > $TeamRank[%otherTeam, count]) && (!$Host::EvoRelaxedFairTeams || ($teamScore[%team] < $teamScore[%otherteam])))
+            {
+               messageClient(%client, 'MsgFairTeams', '\c2Teams will be uneven, please choose another team.');
+               return;
+            }
+            if (( !%admin.isAdmin) && ($Evo::ThisMission::ClanLockActive) && (%team == $Evo::ThisMission::ClanLockTeam) && (!EvoIsClientInClan( %client, $Evo::ThisMission::ClanLockClan)))
+	      {
+               messageClient(%client, 'MsgClanLock', '\c2The team you are trying to change to is locked. Only members of the \c3%2\c2 clan may change to that team.', %team, $Evo::ThisMission::ClanLockClan);
+               return;
+	      }
+         }  
+         if(!%client.isWaiting || %admin.isAdmin)
+         {
+            %client.isWaiting = true;
+            %client.waitStart = getSimTime();
+            %client.schedule($WAIT_PERIOD, waitTimeout);
+            %fromObs = %client.team == 0;
+            if(%fromObs)
+               clearBottomPrint(%client);
+         
+            if(%client.isAIControlled())
+               Game.AIChangeTeam(%client, %team);
+            else
+               Game.clientChangeTeam(%client, %team, %fromObs);
+         }
+         else
+         {
+            %wait = mFloor(($WAIT_PERIOD - (getSimTime() - %client.waitStart)) / 1000);
+            messageClient(%client, "", $WAIT_MESSAGE, %wait);
+         }
+      }
+   }
+}
+
+// serverCmdClientPickedTeam( %client, %option )
+// Info: Prevent the tourney mode message to pop up when a client joins a team (need for flag stats)
+function serverCmdClientPickedTeam(%client, %option)
+{
+   Parent::serverCmdClientPickedTeam(%client, %option);
+   // prevent the message to pop up (flag stats)
+   if(isEventPending($UpdateSchedule[%client]))
+   	cancel($UpdateSchedule[%client]);
+}
+
+// serverCmdGetMissionTypes(%client, %key)
+// Info: Server admins can choose if players can change to a different mission type
+function serverCmdGetMissionTypes(%client, %key)
+{
+   if(%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAllowAdminVoteGameType) || $Host::EvoAllowPlayerVoteGameType)
+   {
+      for(%type = 0; %type < $HostTypeCount; %type++)
+         messageClient(%client, 'MsgVoteItem', "", %key, %type, "", $HostTypeDisplayName[%type], true);
+   }
+   else
+   {
+      for(%type = 0; %type < $HostTypeCount; %type++)
+      {
+         if($HostTypeDisplayName[%type] $= $MissionTypeDisplayName)
+         {
+            messageClient(%client, 'MsgVoteItem', "", %key, %type, "", $HostTypeDisplayName[%type], true);
+            break;
+         }
+         else
+            continue;
+      }
+   }
+}
+
+// serverCmdGetMissionList(%client, %key, %type, %tournament)
+// Info: send different mission list for FFA and Tournament mode
+function serverCmdGetMissionList(%client, %key, %type, %tournament)
+{
+   if(%type < 0 || %type >= $HostTypeCount)
+      return;
+
+   for(%i = $HostMissionCount[%type] - 1; %i >= 0; %i--)
+   {
+      %idx = $HostMission[%type, %i];
+      %test = $Host::MapFFA[$HostMissionFile[%idx], $HostTypeName[%type]];
+
+      // If we have bots, don't change to a mission that doesn't support bots:
+      if($HostGameBotCount > 0)
+      {
+         if(!$BotEnabled[%idx])
+            continue;
+      }
+      if (!%client.pizza && !$Host::TournamentMode && !%test )
+	{
+	  continue;
+	}
+      if ((!%tournament && !$Host::TournamentMode) || (%tournament && $Host::TournamentMode))
+	// In FFA mode, we need to filter out missions so we only show those
+	// allowed in FFA mode
+	{
+	  if ((%test !$= "") && (%test == 0))
+	    continue;
+	}
+      messageClient(%client, 'MsgVoteItem', "", %key, %idx, "", $HostMissionName[%idx], true);
+   }
+}
+
+// serverCmdStripAdmin(%client, %admin)
+// Info: Pizza hud update and logging
+function serverCmdStripAdmin(%client, %admin)
+{
+   if(!%admin.isAdmin || !%client.isAdmin)
+      return;
+
+   if(%client $= %admin)
+   {
+      %admin.isAdmin = 0;
+      %admin.isSuperAdmin = 0;
+      messageClient(%admin, 'MsgStripAdminPlayer', 'You have stripped yourself of admin privledges.');
+      if(%admin.pizza)
+	{
+	  pizzaSendHudUpdate( %game, %admin, "" );
+	}
+      adminLog(%client, " stripped admin from " @ %admin.nameBase @ ".");
+      return;
+   }
+   else if(%client.isSuperAdmin) 
+   {
+      messageAll( 'MsgStripAdminPlayer', '\c2%1 removed %2\'s admin privledges.', %client.name, %admin.name, %admin );
+      messageClient(%admin, 'MsgStripAdminPlayer', 'You are being stripped of your admin privledges by %1.', %client.name);
+      %admin.isAdmin = 0;
+      %admin.isSuperAdmin = 0;
+      if(%admin.pizza)
+	{
+	  pizzaSendHudUpdate( %game, %admin, "" );
+	}
+      adminLog(%client, " stripped admin from " @ %admin.nameBase @ ".");
+   }
+   else
+      messageClient(%client, 'MsgError', '\c2Only Super Admins can use this command.');
+}
+
+// notifyMatchEnd(%time)
+// Info: Notify next mission
+function notifyMatchEnd(%time)
+{
+   %seconds = mFloor(%time / 1000);
+   
+   if (%seconds > 1) {
+      MessageAll('MsgMissionEnd', '\c2Match ends in %1 seconds.~wfx/misc/hunters_%1.wav', %seconds);
+		if (%seconds == 60) {
+			MessageAll('MsgNotifyEvoNextMission', '\c2Next Mission: \c3%1', $EvoCachedNextMission);
+		}
+   }
+   else if (%seconds == 1)
+      MessageAll('MsgMissionEnd', '\c2Match ends in 1 second.~wfx/misc/hunters_1.wav');
+  
+   UpdateClientTimes(%time);
+}
+
+// resetServerDefaults()
+// Info: Re-load the current server prefs and reset some variables
+function resetServerDefaults()
+{
+   $resettingServer = true;
+   echo( "Resetting server defaults..." );
+   
+   if( isObject( Game ) )
+      Game.gameOver();
+   
+   // Override server defaults with prefs:   
+   exec( "scripts/ServerDefaults.cs" );
+   exec( "scripts/evo_prefs.cs" );
+   exec( $serverprefs );
+
+   $MaxPlayers = $Host::MaxPlayers;
+   $BackupPassword = $Host::Password;
+   $EvoDefaultTimeLimit = $Host::TimeLimit;
+   $EvoNoBaseRape = 1;
+   $SaveCustomMapRotation = $Host::EvoCustomMapRotation;
+
+   // ---------------------------------------------------
+   // z0dd - ZOD, 9/29/02. Removed T2 demo code from here
+   //convert the team skin and name vars to tags...
+   %index = 0;
+   while ($Host::TeamSkin[%index] !$= "")
+   {
+      $TeamSkin[%index] = addTaggedString($Host::TeamSkin[%index]);
+      %index++;
+   }
+
+   %index = 0;
+   while ($Host::TeamName[%index] !$= "")
+   {
+      $TeamName[%index] = addTaggedString($Host::TeamName[%index]);
+      %index++;
+   }
+   
+   // Get the hologram names from the prefs...
+   %index = 1;
+   while ( $Host::holoName[%index] !$= "" )
+   {
+      $holoName[%index] = $Host::holoName[%index];
+      %index++;
+   }
+   // ---------------------------------------------------
+
+   // kick all bots...
+   removeAllBots();
+   
+   // add bots back if they were there before..
+   if( $Host::botsEnabled ) // z0dd - ZOD, 9/29/02. Removed T2 demo code from here
+      initGameBots( $Host::Map, $Host::MissionType );
+
+   // load the missions
+   loadMission( $Host::Map, $Host::MissionType );
+   $resettingServer = false;
+   echo( "Server reset complete." );
+}
+
+// FullServerPW(%val)
+// Info: Handle full server password
+function FullServerPW(%val)
+{
+   if(%val && ($Host::EvoFullServerPWPassword !$= "changeit"))
+   {
+      $Host::Password = $Host::EvoFullServerPWPassword;
+      $Host::MaxPlayers += $Host::EvoFullServerPWAddAllowed;
+   }
+   else if($BackupPassword !$= "")
+   {
+   	$Host::Password = $BackupPassword;			// if there was one, restore the old password
+   	$Host::MaxPlayers = $MaxPlayers; // restore the max players allowed
+   }
+   else
+   {
+      $Host::Password = "";
+      $Host::MaxPlayers = $MaxPlayers;
+   }
+}
+
+// serverCmdFullServerPWSetup(%client, %type, %val)
+// Info: Auto-password the server reaching max players allowed
+function serverCmdFullServerPWSetup(%client, %type, %val)
+{
+   %type = detag(%type);
+   %val = detag(%val);
+   if(!%client.isSuperAdmin)
+   {
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2Only Super Admins can use this command.');
+      return;
+   }
+   if(%type $= "")
+   {
+      messageClient(%client, 'MsgTypeFailed', '\c2No Changes. You did not supply a type.');
+      return;
+   }
+   switch$ (%type)
+   {
+      case "fullserverpw":
+         if(%val $= "0")
+         {
+             $Host::EvoFullServerPWEnabled = 0;
+             FullServerPW(0);
+
+             %msg = "\c2Full Server Password disabled.";
+             for(%i = 0; %i < ClientGroup.getCount(); %i++)
+             {
+             	 %cl = ClientGroup.getObject(%i);
+            	 if(%cl.pizza && %cl.isSuperAdmin)
+            		 sendPizzaHudUpdate(%game, %cl, %msg);
+             }
+
+             %adminmsg = " DISABLED Full Server Password.";
+         	 adminLog(%client, %adminmsg);
+             logEcho(%client.nameBase @ " disabled Full Server Password.");
+         }
+         else if (%val $= "1")
+         {
+             $Host::EvoFullServerPWEnabled = 1;
+
+             %msg = "\c2Full Server Password enabled.";
+             for(%i = 0; %i < ClientGroup.getCount(); %i++)
+             {
+             	 %cl = ClientGroup.getObject(%i);
+            	 if(%cl.pizza && %cl.isAdmin)
+            		 sendPizzaHudUpdate(%game, %cl, %msg);
+             }
+
+             %adminmsg = " ENABLED Full Server Password.";
+         	 adminLog(%client, %adminmsg);
+             logEcho(%client.nameBase @ " enabled Full Server Password.");
+         }
+         else
+             messageClient( %client, 'MsgAdmin', '\c2Unknown value. 0 disables Full Server Password, 1 enables Full Server Password.' );
+
+      case "fullserverpwpass":
+         if(%val !$= "" && %val !$= "changeit")
+         {
+            $Host::EvoFullServerPWPassword = %val;
+         }
+         else if(%val $= "changeit")
+         {
+         	messageClient(%client, 'MsgPasswordFailed', '\c2Illegal PW. Please choose another password.');
+            return;
+         }
+         else
+         {
+            messageClient(%client, 'MsgAdmin', '\c2You must specify a password.');
+            return;
+         }
+         export("$Host::*", $serverprefs, false);
+         messageClient(%client, 'MsgServerPassword', '\c2Full Server Password PW changed to: \c3%1\c2.', %val);
+         %adminmsg = " changed the Full Server Password PW to " @ %val;
+         adminLog(%client, %adminmsg);
+         logEcho(%client.nameBase @ " changed the Full Server Password PW.");
+
+      case "fullserverpwadd":
+         if(isNumber(%val) && (%val !$= "") && (%val > 0))
+         {
+            $Host::EvoFullServerPWAddAllowed = %val;
+         }
+         else
+         {
+            messageClient(%client, 'MsgAdmin', '\c2You must specify a numerical value.');
+            return;
+         }
+         export("$Host::*", $serverprefs, false);
+         messageClient(%client, 'MsgServerPassword', '\c2Full Server Password player count changed to: \c3%1\c2.', %val);
+         %adminmsg = " changed the Full Server Password player count to " @ %val;
+         adminLog(%client, %adminmsg);
+         logEcho(%client.nameBase @ " changed the Full Server Password player count.");
+   }
+}
+
+// serverCmdNBRSetup(%client, %type, %val)
+// Info: Enable or Disable No Base Rape option
+function serverCmdNBRSetup(%client, %type, %val)
+{
+   %type = detag(%type);
+   %val = detag(%val);
+
+   if(!%client.isSuperAdmin)
+   {
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2Only Super Admins can use this command.');
+      return;
+   }
+   if(%type $= "")
+   {
+      messageClient(%client, 'MsgTypeFailed', '\c2No Changes. You did not supply a type.');
+      return;
+   }
+   switch$ (%type)
+   {
+      case "NoBaseRape":
+         if(%val $= "0")
+         {
+         	$Host::EvoNoBaseRapeEnabled = 0;
+            $EvoNoBaseRape = 0;
+
+            %msg = "\c2NO BASE RAPE DISABLED.~wfx/misc/diagnostic_on.wav";
+            for(%i = 0; %i < ClientGroup.getCount(); %i++)
+            {
+               %cl = ClientGroup.getObject(%i);
+               if(!%cl.pizza)
+                  messageClient(%cl, 'MsgAdmin', '\c2NO BASE RAPE DISABLED.~wfx/misc/diagnostic_on.wav');
+               else
+                  sendPizzaHudUpdate(%game, %cl, %msg);
+            }
+            %adminmsg = " DISABLED No Base Rape.";
+         	adminLog(%client, %adminmsg);
+            logEcho(%client.nameBase @ " disabled No Base Rape.");
+         }
+         else if (%val $= "1")
+         {
+         	$Host::EvoNoBaseRapeEnabled = 1;
+            if(!$Host::TournamentMode && ($HostGamePlayerCount < $Host::EvoNoBaseRapePlayerCount))
+               $EvoNoBaseRape = 1;
+
+            %msg = "\c2NO BASE RAPE ENABLED.~wfx/misc/diagnostic_on.wav";
+            for(%i = 0; %i < ClientGroup.getCount(); %i++)
+            {
+               %cl = ClientGroup.getObject(%i);
+               if(!%cl.pizza)
+            	messageClient(%cl, 'MsgAdmin', '\c2NO BASE RAPE ENABLED.~wfx/misc/diagnostic_on.wav');
+               else
+            	sendPizzaHudUpdate(%game, %cl, %msg);
+            }
+
+            %adminmsg = " ENABLED No Base Rape.";
+         	adminLog(%client, %adminmsg);
+            logEcho(%client.nameBase @ " enabled No Base Rape.");
+         }
+         else
+         	messageClient( %client, 'MsgAdmin', '\c2Unknown value. 0 disables No Base Rape, 1 enables No Base Rape.' );
+
+      case "NoBaseRapeBase":
+         if(isNumber(%val) && (%val !$= "") && (%val > 0))
+         {
+            $Host::EvoNoBaseRapePlayerCount = %val;
+         }
+         else
+         {
+            messageClient( %client, 'MsgAdmin', '\c2You must specify a numerical value.' );
+            return;
+         }
+         if(!$Host::TournamentMode && ($HostGamePlayerCount < $Host::EvoNoBaseRapePlayerCount))
+            $EvoNoBaseRape = 1;
+         else
+            $EvoNoBaseRape = 0;
+
+         export("$Host::*", $serverprefs, false);
+         messageClient(%client, 'MsgServerPassword', '\c2No Base Rape min base players count changed to: \c3%1\c2.', %val);
+         %adminmsg = " changed the No Base Rape Min Base player count to " @ %val;
+         adminLog(%client, %adminmsg);
+         logEcho(%client.nameBase @ " changed the No Base Rape Min Base player count.");
+      
+      case "NoBaseRapeClassic":
+         if(isNumber(%val) && (%val !$= "") && (%val > 0))
+         {
+            $Host::EvoNoBaseRapeClassicPlayerCount = %val;
+         }
+         else
+         {
+            messageClient( %client, 'MsgAdmin', '\c2You must specify a numerical value.' );
+            return;
+         }
+         export("$Host::*", $serverprefs, false);
+         messageClient(%client, 'MsgServerPassword', '\c2No Base Rape min classic players count changed to: \c3%1\c2.', %val);
+         %adminmsg = " changed the No Base Rape Min Classic player count to " @ %val;
+         adminLog(%client, %adminmsg);
+         logEcho(%client.nameBase @ " changed the No Base Rape Min Classic player count.");
+   }
+}
+
+// These functions have been disabled, use evo_mapRotation.cs for your custom mission list
+function serverCmdAddMap(%client, %map)
+{
+   %map = detag(%map);
+   if(%client.isSuperAdmin)
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2This command has been disabled. (edit evo_mapRotation.cs)');
+   else
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2Only Super Admins can use this command.');
+}
+
+function serverCmdRemoveMap(%client, %map)
+{
+   %map = detag(%map);
+   if(%client.isSuperAdmin)
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2This command has been disabled. (edit evo_mapRotation.cs)');
+   else
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2Only Super Admins can use this command.');
+}
+
+function serverCmdAddType(%client, %type)
+{
+   %type = detag(%type);
+   if(%client.isSuperAdmin)
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2This command has been disabled. (edit evo_mapRotation.cs)');
+   else
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2Only Super Admins can use this command.');
+}
+
+function serverCmdRemoveType(%client, %type)
+{
+   %type = detag(%type);
+   if(%client.isSuperAdmin)
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2This command has been disabled. (edit evo_mapRotation.cs)');
+   else
+      messageClient(%client, 'MsgNotSuperAdmin', '\c2Only Super Admins can use this command.');
+}
+
+// serverCmdSetMaxPlayers(%client, %val)
+// Info: Admins can change max players inside the game (need PizzaClient) 
+function serverCmdSetMaxPlayers(%client, %val)
+{
+   %val = detag(%val);
+   if(!%client.isAdmin)
+   {
+   	messageClient(%client, 'MsgNotSuperAdmin', '\c2Only Admins can use this command.');
+   	return;
+   }
+   if(!%client.isSuperAdmin && %client.isAdmin && !$Host::EvoAdminMaxPlayers)
+   {
+   	messageClient(%client, 'MsgNotSuperAdmin', '\c2This function is disabled.');
+   	return;
+   }
+   if(isNumber(%val) && (%val > 0))
+   {
+      $Host::MaxPlayers = %val;
+      export( "$Host::*", $serverprefs, false );
+      messageAll( 'MsgMaxPlayersSet', '\c3%1\c2: PLAYER LIMIT CHANGED TO: \c3%2\c2.~wfx/misc/diagnostic_on.wav', %client.name, %val);
+      %adminmsg = " changed the player limit to " @ %val;
+      adminLog(%client, %adminmsg);
+      logEcho(%client.nameBase @ " changed the player limit.");
+   }
+   else
+   	messageClient( %client, 'MsgAdmin', '\c2Value must be a positive number.' );
+}
+
+// serverCmdWhois(%client, %target)
+// Info: Show player's info to admins
+function serverCmdWhois(%client, %target)
+{
+   if((%client.isAdmin && $Host::EvoAdminWhois) || (%client.isSuperAdmin && $Host::EvoSuperAdminWhois))
+   {
+      if(%target.isSuperAdmin && $Host::EvoBlockSuperAdminWhois)
+      {
+         messageClient(%sender, 'MsgPizzaWhois', '\c2Whois disabled with Super Admins.');
+         return;
+      }
+      %authInfo = %target.getAuthInfo();
+      messageClient(%client, 'MsgPizzaWhois', 'NAME: %1, REALNAME: %2, CLAN: %3, GUID: %4, CLIENT: %5, %6', %target.name, getField(%authInfo, 0), getField(%authInfo, 1), %target.guid, %target.client, %target.getAddress());
+   }
+}
+
+// serverCmdMakePlayerSuperAdmin(%client, %target)
+// Info: Let Super Admins to Super Admin other players
+function serverCmdMakePlayerSuperAdmin(%client, %target)
+{
+   if(%client.isSuperAdmin && $Host::EvoSuperAdminSuper && !%target.isSuperAdmin && !%target.isAIControlled())
+   {
+      messageAll('MsgSuperAdminPlayer', '\c2%3 made %2 a Super Admin.', %target, %target.name, %client.name);
+      %target.isAdmin = true;
+      %target.isSuperAdmin = true;
+      if ( %target.pizza )
+      {
+         pizzaSendHudUpdate( %game, %target, "" );
+      }
+      %authInfo = %target.getAuthInfo();
+      adminLog(%client, " made " @ %target.nameBase @ "( " @ getField(%authInfo, 0) @ ", " @ getField(%authInfo, 1) @ ", " @ %target.guid @ ", " @ %target.getAddress() @ ") a Super Admin.");
+   }
+}
+
+// * PIZZA CLIENT OPTIONS *
+// serverCmdRegisterPizzaClient(%client)
+// Info: Update Pizza Client on join
+function serverCmdRegisterPizzaClient(%client)
+{
+   if(!%client.pizza)
+   {
+      %client.pizza = true;
+      %msg = "\c2Pizza Client registered.";
+      sendPizzaHudUpdate(%game, %client, %msg);
+   }
+}
+
+// * AUTO DETECT TRICON CLIENT *
+// serverCmdTriconRegisterClient
+function serverCmdTriconRegisterClient( %client, %version )
+{
+   if (!%client.tricon)
+   {
+      %client.tricon = 1;
+      %client.triconversion = %version;
+   }
+}
+
+// serverCmdToggleMADetection(%client, %val)
+// Info: Let server know if clients want to see the bottomprint message
+function serverCmdToggleBottomPrint(%client, %val)
+{
+   %val = %val == 0 ? 2 : 1;
+   %client.showMA = %val;
+}
+
+// sendPizzaHudUpdate(%game, %client, %msg)
+// Info: Update Pizza Client when some option has been changed
+function sendPizzaHudUpdate(%game, %client, %msg)
+{
+   %pizzaOptMask = 0;
+   if($RandomTeams == 1) %pizzaOptMask += 1;
+   if($Host::ClassicFairTeams == 1) %pizzaOptMask += 2;
+   if($Host::ClassicAutoPWEnabled == 1) %pizzaOptMask += 4;
+   if($Host::EvoFullServerPWEnabled == 1) %pizzaOptMask += 8;
+   if($Host::EvoNoBaseRapeEnabled == 1) %pizzaOptMask += 16;
+   if($PizzaHudRestartVar == 1) %pizzaOptMask += 32;
+   messageClient(%client, 'UpdatePizzaHud', %msg, %pizzaOptMask, %client.isAdmin + %client.isSuperAdmin);
+}
+
+// reallyQuit()
+// Info: Delete dso before quitting 
+function reallyQuit()
+{
+   deleteDso();
+   quit();
+}
+

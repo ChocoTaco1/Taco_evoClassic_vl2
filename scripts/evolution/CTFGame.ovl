@@ -1,0 +1,484 @@
+function CTFGame::getTeamName(%game, %team)
+{
+  if ( $Evo::ThisMission::TeamName[%team] !$= "" )
+    {
+      return $Evo::ThisMission::TeamName[%team];
+    }
+
+   if($Evo::ETMMode && %team != 0)
+   	return $ETMmode::Team[$ETMCMap, %team];
+
+  return parent::getTeamName( %game, %team );
+}
+
+// CTFGame::flagReturn(%game, %flag, %player)
+// Info: bottomprint a message on mid air returns
+function CTFGame::flagReturn(%game, %flag, %player)
+{
+   // Kill the lava scedule - Ilys
+   if(isEventPending(%flag.lavaEnterThread))
+      cancel(%flag.lavaEnterThread);
+
+   cancel($FlagReturnTimer[%flag]);
+   $FlagReturnTimer[%flag] = "";
+
+   if(%flag.team == 1)
+      %otherTeam = 2;
+   else
+      %otherTeam = 1;
+   %teamName = %game.getTeamName(%flag.team);
+
+      // when the flag return, stop observing the flag, and go in observerFly mode
+   for(%i = 0; %i < ClientGroup.getCount(); %i++)
+   {
+      %cl = ClientGroup.getObject(%i);
+      if(%cl.team <= 0 && %cl.observingFlag && %cl.flagObsTeam == %flag.team)
+	{
+	   %cl.camera.mode = "observerFly";
+	   %cl.camera.setFlyMode();
+	   updateObserverFlyHud(%cl);
+
+	   %cl.observingFlag = false;
+	   %cl.flagObserved = "";
+	   %cl.flagObsTeam = "";
+      }
+   }
+
+   if (%player !$= "")
+   {
+      //a player returned it
+      %client = %player.client;
+      messageTeamExcept(%client, 'MsgCTFFlagReturned', '\c2Teammate %1 returned your flag to base.~wfx/misc/flag_return.wav', %client.name, 0, %flag.team);
+      messageTeam(%otherTeam, 'MsgCTFFlagReturned', '\c2Enemy %1 returned the %2 flag.~wfx/misc/flag_return.wav', %client.name, %teamName, %flag.team);
+      messageTeam(0, 'MsgCTFFlagReturned', '\c2%1 returned the %2 flag.~wfx/misc/flag_return.wav', %client.name, %teamName, %flag.team);
+      messageClient(%client, 'MsgCTFFlagReturned', '\c2You returned your flag.~wfx/misc/flag_return.wav', %client.name, %teamName, %flag.team); // Yogi, 8/18/02. 3rd param changed 0 -> %client.name
+      logEcho(%client.nameBase@" (pl "@%player@"/cl "@%client@") returned team "@%flag.team@" flag");
+
+      // find out what type of return it is
+      // stalemate return?
+
+      // ---------------------------------------------------
+      // z0dd - ZOD, 9/29/02. Removed T2 demo code from here
+      if(%game.stalemate)
+      {
+        //error("Stalemate return!!!");
+        %game.awardScoreStalemateReturn(%player.client);
+      }
+      // regular return
+      else
+      {
+        %enemyFlagDist = vectorDist($flagPos[%flag.team], $flagPos[%otherTeam]);
+        %dist = vectorDist(%flag.position, %flag.originalPosition);
+
+        %rawRatio = %dist/%enemyFlagDist;
+        %ratio = %rawRatio < 1 ? %rawRatio : 1;
+        %percentage = mFloor( (%ratio) * 10 ) * 10;
+        %game.awardScoreFlagReturn(%player.client, %percentage);
+      }
+      // ---------------------------------------------------
+   }
+   else
+   {
+      //returned due to timer
+      messageTeam(%otherTeam, 'MsgCTFFlagReturned', '\c2The %2 flag was returned to base.~wfx/misc/flag_return.wav', 0, %teamName, %flag.team);  //because it was dropped for too long
+      messageTeam(%flag.team, 'MsgCTFFlagReturned', '\c2Your flag was returned.~wfx/misc/flag_return.wav', 0, 0, %flag.team);
+      messageTeam(0, 'MsgCTFFlagReturned', '\c2The %2 flag was returned to base.~wfx/misc/flag_return.wav', 0, %teamName, %flag.team);
+      logEcho("team "@%flag.team@" flag returned (timeout)");
+   }
+   %game.flagReset(%flag);
+}
+
+// playerTouchEnemyFlag(%game, %player, %flag)
+// Info: if the flag is at the flag-stand, start the cap time
+function CTFGame::playerTouchEnemyFlag(%game, %player, %flag)
+{
+   // z0dd, ZOD - 9/27/02. Player must wait to grab after throwing it
+   if((%player.flagTossWait !$= "") && %player.flagTossWait)
+      return false;
+   // z0dd - ZOD, 9/28/02. Hack for flag collision bug.  SquirrelOfDeath, 10/02/02: Moved from PlayerTouchFlag
+   cancel(%flag.searchSchedule);
+
+   // z0dd - ZOD, 8/4/02. Cancel this flag's thread to KineticPoet's flag updater
+   cancel(%game.updateFlagThread[%flag]);
+   %game.flagHeldTime[%flag] = getSimTime(); // z0dd - ZOD, 8/15/02. Store time player grabbed flag.
+   %client = %player.client;
+   %player.holdingFlag = %flag;  //%player has this flag
+   %flag.carrier = %player;  //this %flag is carried by %player
+
+   // attach the camera to the flag.carrier
+   for(%i = 0; %i < ClientGroup.getCount(); %i++)
+   {
+      %cl = ClientGroup.getObject(%i);
+      if(%cl.team <= 0 && %cl.observingFlag && %cl.flagObsTeam == %flag.team)
+         observeFlag(%cl, %player.client, 2, %flag.team);
+   }
+   %player.mountImage(FlagImage, $FlagSlot, true, %game.getTeamSkin(%flag.team));
+   %game.playerGotFlagTarget(%player);
+   //only cancel the return timer if the player is in bounds...
+   if(!%client.outOfBounds)
+   {
+      cancel($FlagReturnTimer[%flag]);
+      $FlagReturnTimer[%flag] = "";
+   }
+
+   // if it's a mid air grab, bottomprint a message
+//	if((%ma = EvoGetPlayerHeight(%flag, 5)) && !%flag.isHome && $Host::EvoStats && !%player.flagStatsWait && (!$Host::TournamentMode || ($Host::TournamentMode && $Host::EvoStatsTourney)))
+//		bottomPrint(%client, "Mid Air Grab!! Height: " @ mFloor(getWord(%flag.getPosition(), 2) - getTerrainHeight(%flag.getPosition())) @ " meters.", 2);
+
+   //if this flag was "at home", see if both flags have now been taken
+   if(%flag.isHome)
+   {
+      // tiebreaker score
+      %game.awardScoreFlagTouch( %client, %flag );
+
+      %startStalemate = false;
+      if($TeamFlag[1] == %flag)
+         %startStalemate = !$TeamFlag[2].isHome;
+      else
+         %startStalemate = !$TeamFlag[1].isHome;
+
+      if(%startStalemate)
+         %game.stalemateSchedule = %game.schedule(%game.stalemateTimeMS, beginStalemate);
+
+      // Store time player grabbed flag
+      if($Host::EvoStats)
+      {
+         %game.flagGrabHeldTime[%flag] = getSimTime();
+         $Evo::stats::grabs[%client]++;
+         if($Evo::stats::grabs[%client] > $Evo::stats::grabs_counter)
+         {
+            $Evo::stats::grabs_counter = $Evo::stats::grabs[%client];
+            $Evo::stats::grabs_client = getTaggedString(%client.name);
+         }
+      }
+   }
+
+   if($Host::EvoStats && !%player.flagStatsWait && (!$Host::TournamentMode || ($Host::TournamentMode && $Host::EvoStatsTourney)))
+   {
+	// get the grab speed
+   	%grabspeed = mFloor(VectorLen(setWord(%player.getVelocity(), 2, 0)) * 3.6);
+
+   	if(%grabspeed > $Evo::stats::MaxGrabSpeed || ($Evo::stats::MaxGrabSpeed $= ""))
+   	{
+   		$Evo::stats::MaxGrabSpeed = %grabspeed;
+   		$Evo::stats::Grabber = getTaggedString(%client.name);
+   	}
+   }
+
+   %flag.hide(true);
+   %flag.startFade(0, 0, false);
+   %flag.isHome = false;
+   if(%flag.stand)
+      %flag.stand.getDataBlock().onFlagTaken(%flag.stand);//animate, if exterior stand
+
+   $flagStatus[%flag.team] = %client.nameBase;
+   %teamName = %game.getTeamName(%flag.team);
+
+   if(%grabspeed)
+   {
+      messageTeamExcept(%client, 'MsgCTFFlagTaken', '\c2Teammate %1 took the %2 flag. (speed: %5Kph)~wfx/misc/flag_snatch.wav', %client.name, %teamName, %flag.team, %client.nameBase, %grabspeed);
+      messageTeam(%flag.team, 'MsgCTFFlagTaken', '\c2Your flag has been taken by %1! (speed: %5Kph)~wfx/misc/flag_taken.wav',%client.name, 0, %flag.team, %client.nameBase, %grabspeed);
+      messageTeam(0, 'MsgCTFFlagTaken', '\c2%1 took the %2 flag. (speed: %5Kph)~wfx/misc/flag_snatch.wav', %client.name, %teamName, %flag.team, %client.nameBase, %grabspeed);
+      messageClient(%client, 'MsgCTFFlagTaken', '\c2You took the %2 flag. (speed: %5Kph)~wfx/misc/flag_snatch.wav', %client.name, %teamName, %flag.team, %client.nameBase, %grabspeed);
+   }
+   else
+   {
+      messageTeamExcept(%client, 'MsgCTFFlagTaken', '\c2Teammate %1 took the %2 flag.~wfx/misc/flag_snatch.wav', %client.name, %teamName, %flag.team, %client.nameBase);
+      messageTeam(%flag.team, 'MsgCTFFlagTaken', '\c2Your flag has been taken by %1!~wfx/misc/flag_taken.wav',%client.name, 0, %flag.team, %client.nameBase);
+      messageTeam(0, 'MsgCTFFlagTaken', '\c2%1 took the %2 flag.~wfx/misc/flag_snatch.wav', %client.name, %teamName, %flag.team, %client.nameBase);
+      messageClient(%client, 'MsgCTFFlagTaken', '\c2You took the %2 flag.~wfx/misc/flag_snatch.wav', %client.name, %teamName, %flag.team, %client.nameBase);
+   }
+   logEcho(%client.nameBase @ " (pl " @ %player @ "/cl " @ %client @ ") took team " @ %flag.team @ " flag");
+
+   //call the AI function
+   %game.AIplayerTouchEnemyFlag(%player, %flag);
+
+   //if the player is out of bounds, then in 3 seconds, it should be thrown back towards the in bounds area...
+   if(%client.outOfBounds)
+      %game.schedule(3000, "boundaryLoseFlag", %player);
+}
+
+// playerDroppedFlag(%game, %player)
+// Info: When the flag is dropped, reset the cap time
+function CTFGame::playerDroppedFlag(%game, %player)
+{
+   %client = %player.client;
+   %flag = %player.holdingFlag;
+   
+   // z0dd - ZOD, 8/4/02, Call to KineticPoet's flag updater
+   %game.updateFlagTransform(%flag);
+   %held = %game.formatTime(getSimTime() - %game.flagHeldTime[%flag], false); // z0dd - ZOD, 8/15/02. How long did player hold flag?
+
+   // reset cap time
+   if($Host::EvoStats)
+   	%game.flagGrabHeldTime[%flag] = 0;
+     
+   %game.playerLostFlagTarget(%player);
+
+   %player.holdingFlag = ""; //player isn't holding a flag anymore
+   %flag.carrier = "";  //flag isn't held anymore 
+   $flagStatus[%flag.team] = "<In the Field>";
+
+   // attach the camera again to the flag
+   for(%i = 0; %i < ClientGroup.getCount(); %i++)
+   {
+      %cl = ClientGroup.getObject(%i);
+      if(%cl.team <= 0 && %cl.observingFlag && %cl.flagObsTeam == %flag.team)
+	   observeFlag(%cl, $TeamFlag[%flag.team], 1, %flag.team);
+   }
+   %player.unMountImage($FlagSlot);   
+   %flag.hide(false); //Does the throwItem function handle this?   
+
+   %teamName = %game.getTeamName(%flag.team);
+   messageTeamExcept(%client, 'MsgCTFFlagDropped', '\c2Teammate %1 dropped the %2 flag. (Held: %4)~wfx/misc/flag_drop.wav', %client.name, %teamName, %flag.team, %held); // z0dd - ZOD, 8/15/02. How long flag was held
+   messageTeam(%flag.team, 'MsgCTFFlagDropped', '\c2Your flag has been dropped by %1! (Held: %4)~wfx/misc/flag_drop.wav', %client.name, 0, %flag.team, %held); // z0dd - ZOD, 8/15/02. How long flag was held
+   messageTeam(0, 'MsgCTFFlagDropped', '\c2%1 dropped the %2 flag. (Held: %4)~wfx/misc/flag_drop.wav', %client.name, %teamName, %flag.team, %held); // z0dd - ZOD, 8/15/02. How long flag was held
+
+   if(!%player.client.outOfBounds)
+      messageClient(%client, 'MsgCTFFlagDropped', '\c2You dropped the %2 flag. (Held: %4)~wfx/misc/flag_drop.wav', %client.name, %teamName, %flag.team, %held); // z0dd - ZOD, 8/15/02. How long flag was held
+   
+   logEcho(%client.nameBase @ " (pl " @ %player @ "/cl " @ %client @ ") dropped team " @ %flag.team @ " flag" @ " (Held: " @ %held @ ")");
+
+   //don't duplicate the schedule if there's already one in progress...
+   if($FlagReturnTimer[%flag] <= 0)
+      $FlagReturnTimer[%flag] = %game.schedule(%game.FLAG_RETURN_DELAY - %game.fadeTimeMS, "flagReturnFade", %flag);
+     
+   //call the AI function
+   %game.AIplayerDroppedFlag(%player, %flag);
+}
+
+// boundaryLoseFlag(%game, %player)
+// Info: When the flag is dropped, reset the cap time
+function CTFGame::boundaryLoseFlag(%game, %player)
+{
+   // this is called when a player goes out of the mission area while holding
+   // the enemy flag. - make sure the player is still out of bounds
+   if(!%player.client.outOfBounds || !isObject(%player.holdingFlag))
+      return;
+	
+   // z0dd - ZOD - SquirrelOfDeath, 9/27/02. Delay on grabbing flag after tossing it
+   %player.flagTossWait = true;
+   %player.schedule(1000, resetFlagTossWait);
+   
+   // Delay on calculating stats
+   %player.flagStatsWait = true;
+   %player.schedule(5000, resetFlagStatsWait);
+
+   %client = %player.client;
+   %flag = %player.holdingFlag;
+   %flag.setVelocity("0 0 0");
+   %flag.setTransform(%player.getWorldBoxCenter());
+   %flag.setCollisionTimeout(%player);
+   
+   // reset cap time
+   if($Host::EvoStats)
+   	%game.flagGrabHeldTime[%flag] = 0;
+
+   %held = %game.formatTime(getSimTime() - %game.flagHeldTime[%flag], false); // z0dd - ZOD, 8/15/02. How long did player hold flag?
+   %game.playerDroppedFlag(%player);
+
+   // now for the tricky part -- throwing the flag back into the mission area
+   // let's try throwing it back towards its "home"
+   %home = %flag.originalPosition;
+   %vecx =  firstWord(%home) - firstWord(%player.getWorldBoxCenter());
+   %vecy = getWord(%home, 1) - getWord(%player.getWorldBoxCenter(), 1);
+   %vecz = getWord(%home, 2) - getWord(%player.getWorldBoxCenter(), 2);
+   %vec = %vecx SPC %vecy SPC %vecz;
+
+   // normalize the vector, scale it, and add an extra "upwards" component
+   %vecNorm = VectorNormalize(%vec);
+   %vec = VectorScale(%vecNorm, 1500);
+   %vec = vectorAdd(%vec, "0 0 500");
+
+   // z0dd - ZOD, 6/09/02. Remove anti-hover so flag can be thrown properly
+   %flag.static = false;
+
+   // z0dd - ZOD, 10/02/02. Hack for flag collision bug.
+   %flag.searchSchedule = %game.schedule(10, "startFlagCollisionSearch", %flag);
+
+   // apply the impulse to the flag object
+   %flag.applyImpulse(%player.getWorldBoxCenter(), %vec);
+
+
+   messageClient(%player.client, 'MsgCTFFlagDropped', '\c1You have left the mission area and lost the flag. (Held: %4)~wfx/misc/flag_drop.wav', %client.name, 0, %flag.team, %held); // Yogi, 8/18/02. 3rd param changed 0 -> %client.name
+   logEcho(%player.client.nameBase @ " (pl " @ %player @ "/cl " @ %player.client @ ") lost flag (out of bounds)" @ " (Held: " @ %held @ ")");
+}
+
+// flagCap(%game, %player)
+// Info: check for cap time records. If exist, saves them in a file
+function CTFGame::flagCap(%game, %player)
+{
+   %client = %player.client;
+   %flag = %player.holdingFlag;
+   %flag.carrier = "";
+
+   // when a player cap the flag, continue observing the player
+   for(%i = 0; %i < ClientGroup.getCount(); %i++)
+     {
+       %cl = ClientGroup.getObject(%i);
+       if(%cl.team <= 0 && %cl.observingFlag && %cl.flagObsTeam == %flag.team)
+	 {
+	   %cl.observingFlag = false;
+	   %cl.flagObserved = "";
+	   %cl.flagObsTeam = "";
+	 }
+     }
+
+   %held = %game.formatTime(getSimTime() - %game.flagHeldTime[%flag], false); // z0dd - ZOD, 8/15/02. How long did player hold flag?
+   %game.playerLostFlagTarget(%player);
+   //award points to player and team
+   %teamName = %game.getTeamName(%flag.team);
+   %otherTeam = %game.getTeamName(%client.team);
+   
+if($Host::EvoStats)
+	{
+		if(%game.flagGrabHeldTime[%flag]) // is it a grab-->cap ?
+	   {
+	   	%held2 = getSimTime() - %game.flagGrabHeldTime[%flag];
+	   	%realTime = %game.formatTime(%held2, true);
+	      
+	      if(%client.team == 1) // first team
+	      {
+	      	if((%held2 < $Evo::flagstats::heldTeam1) || $Evo::flagstats::heldTeam1 == 0)
+	      	{
+	      		$Evo::flagstats::heldTeam1 = %held2;
+	      		$Evo::flagstats::realTeam1 = %realTime;
+	      		$Evo::flagstats::nickTeam1 = %client.nameBase;
+	      		messageAll('MsgCTFNewRecord', '\c2It\'s a new record! Time: \c3%1', %realTime);
+	      		
+
+			   	%fileOut = "stats/maps/classic/" @ $CurrentMissionType @ "/" @ $CurrentMission @ ".txt"; 
+			   	// i need to save this variables in the base directory and the classic directory
+			   	export("$Evo::flagstats::*", %fileOut, false);
+
+			   	export("$Evo::flagstats::*", "../base/stats/maps/classic/" @ $CurrentMissionType @ "/" @ $CurrentMission @ ".txt", false);
+	      	}
+	      }
+	      else if((%held2 < $Evo::flagstats::heldTeam2) || $Evo::flagstats::heldTeam2 == 0)
+	      {
+	      	$Evo::flagstats::heldTeam2 = %held2;
+	      	$Evo::flagstats::realTeam2 = %realTime;
+	      	$Evo::flagstats::nickTeam2 = %client.nameBase;
+	      	messageAll('MsgCTFNewRecord', '\c2It\'s a new record! Time: \c3%1', %realTime);
+	      	
+
+		   	%fileOut = "stats/maps/classic/" @ $CurrentMissionType @ "/" @ $CurrentMission @ ".txt";
+		   	// i need to save this variables in the base directory and the classic directory
+		   	export("$Evo::flagstats::*", %fileOut, false);
+
+		   	export("$Evo::flagstats::*", "../base/stats/maps/classic/" @ $CurrentMissionType @ "/" @ $CurrentMission @ ".txt", false);
+	      }
+	      
+	   	if(!$Host::TournamentMode || ($Host::TournamentMode && $Host::EvoStatsTourney))
+	   		bottomprint(%client, "You captured the flag in " @ %realTime @ " seconds", 3);
+	   		
+	   	$Evo::stats::caps[%client]++;
+	   	
+	   	if($Evo::stats::caps[%client] > $Evo::stats::caps_counter)
+	   	{
+	   		$Evo::stats::caps_counter = $Evo::stats::caps[%client];
+	   		$Evo::stats::caps_client = getTaggedString(%client.name);
+	   	}
+	   	
+	   	if(%held2 < $Evo::stats::fastestCap || !$Evo::stats::fastestCap)
+	   	{
+	   		$Evo::stats::fastestCap = %held2;
+	   		$Evo::stats::fastcap_time = %realTime;
+	   		$Evo::stats::fastcap_client = getTaggedString(%client.name);
+	   	}
+		}
+	}
+	
+   if(%game.flagGrabHeldTime[%flag])
+	{
+		messageTeamExcept(%client, 'MsgCTFFlagCapped', '\c2%1 captured the %2 flag! (Held: %5)~wfx/misc/flag_capture.wav', %client.name, %teamName, %flag.team, %client.team, %realTime);
+		messageTeam(%flag.team, 'MsgCTFFlagCapped', '\c2Your flag was captured by %1. (Held: %5)~wfx/misc/flag_lost.wav', %client.name, 0, %flag.team, %client.team, %realTime); 
+		messageTeam(0, 'MsgCTFFlagCapped', '\c2%1 captured the %2 flag! (Held: %5)~wfx/misc/flag_capture.wav', %client.name, %teamName, %flag.team, %client.team, %realTime); 
+
+
+		messageClient(%client, 'MsgCTFFlagCapped', '\c2You captured the %2 flag! (Held: %5)~wfx/misc/flag_capture.wav', %client.name, %teamName, %flag.team, %client.team, %realTime); // Yogi, 8/18/02.  3rd param changed 0 -> %client.name
+	}
+	else
+	{
+
+		messageTeamExcept(%client, 'MsgCTFFlagCapped', '\c2%1 captured the %2 flag! (Held: %5)~wfx/misc/flag_capture.wav', %client.name, %teamName, %flag.team, %client.team, %held);
+		messageTeam(%flag.team, 'MsgCTFFlagCapped', '\c2Your flag was captured by %1. (Held: %5)~wfx/misc/flag_lost.wav', %client.name, 0, %flag.team, %client.team, %held); 
+		messageTeam(0, 'MsgCTFFlagCapped', '\c2%1 captured the %2 flag! (Held: %5)~wfx/misc/flag_capture.wav', %client.name, %teamName, %flag.team, %client.team, %held); 
+		messageClient(%client, 'MsgCTFFlagCapped', '\c2You captured the %2 flag! (Held: %5)~wfx/misc/flag_capture.wav', %client.name, %teamName, %flag.team, %client.team, %held); // Yogi, 8/18/02.  3rd param changed 0 -> %client.name
+	}
+	
+
+   logEcho(%client.nameBase @ " (pl " @ %player @ "/cl " @ %client @ ") capped team " @ %client.team @ " flag" @ " (Held: " @ %held @ ")");
+   %player.holdingFlag = ""; //no longer holding it.
+   %player.unMountImage($FlagSlot);
+   %game.awardScoreFlagCap(%client, %flag);   
+   %game.flagReset(%flag);
+     
+   //call the AI function
+   %game.AIflagCap(%player, %flag);
+
+   //if this cap didn't end the game, play the announcer...
+   if($missionRunning)
+   {
+
+   	// classic uses only storm/inferno
+      if(%game.getTeamName(%client.team) $= 'Inferno' || ($Evo::ETMMode && (%otherTeam $= $ETMmode::Team[$ETMCMap, 2])))
+         messageAll("", '~wvoice/announcer/ann.infscores.wav');
+      else if(%game.getTeamName(%client.team) $= 'Storm' || ($Evo::ETMMode && (%otherTeam $= $ETMmode::Team[$ETMCMap, 1])))
+         messageAll("", '~wvoice/announcer/ann.stoscores.wav');
+   }
+   
+   //ResetNotify
+   ResetUnbalancedNotifyPerCap();
+   
+}
+
+function CTFGame::beginStalemate(%game)
+{
+   %game.stalemate = true;
+   $stalemate = true;
+   %game.showStalemateTargets();
+
+   // z0dd - ZOD, 5/27/03. Added anti-turtling, return flags after x minutes
+   if(!$Host::TournamentMode)
+   {
+      %time = $Host::ClassicAntiTurtleTime * 60000;
+      messageAll( 'MsgStalemate', '\c3Anti turtle initialized. Flags will be returned to bases in %1 minutes.', $Host::ClassicAntiTurtleTime);
+      %game.turtleSchedule = %game.schedule(%time, "antiTurtle");
+	  error(formatTimeString("HH:nn:ss") SPC "Anti-Turtle thread beginning now - ID" SPC %game.turtleSchedule SPC "Time:" SPC %time);
+   }
+}
+
+function CTFGame::endStalemate(%game)
+{
+   %game.stalemate = false;
+   $stalemate = false;
+   %game.hideStalemateTargets();
+   cancel(%game.stalemateSchedule);
+   cancel(%game.turtleSchedule);
+}
+
+// z0dd - ZOD, 5/27/03. Anti-turtle function
+function CTFGame::antiTurtle(%game)
+{
+   for(%i = 1; %i <= 2; %i++)
+	  {
+	  Game.flagReturn($TeamFlag[%i]);
+	  }
+   
+   messageAll( 'MsgCTFFlagReturned', '\c3Both flags returned to bases to break stalemate.~wfx/misc/flag_return.wav', 0, 0, %i);
+   
+   if(isEventPending(%game.turtleSchedule))
+	  cancel(%game.turtleSchedule);
+
+   if(%game.turtleSchedule > 0)
+      %game.turtleSchedule = 0;
+
+   if(isEventPending(%game.stalemateSchedule))
+	  cancel(%game.stalemateSchedule);
+
+   if(%game.stalemateSchedule > 0)
+      %game.stalemateSchedule = 0;
+
+   error(formatTimeString("HH:nn:ss") SPC "Anti-Turtle thread ended");
+}

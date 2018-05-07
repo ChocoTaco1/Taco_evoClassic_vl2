@@ -1,0 +1,837 @@
+// serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %playerVote)
+// Info: totally re-wrote, now it's easy to read and simple to edit (original idea: bwadmin)
+function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %playerVote)
+{
+  %isAdmin = (%client.isAdmin || %client.isSuperAdmin);
+  if(!%client.canVote && !%isAdmin)
+    return;
+
+  // Sinbinned players cannot take action
+  if ( %client.SinBinned )
+    return;
+
+  %clientsVoting = 0;
+
+   // z0dd - ZOD, 5/19/03. Get the Admins client.
+   if(%isAdmin)
+      $AdminCl = %client;
+
+  // Is this a tricon style call
+  if ( TriconWrapper( %client, %arg1, %typename ) )
+	return;
+
+   switch$(%typename)
+   {
+      case "VoteKickPlayer":
+         if(%isAdmin && %client != %arg1) // client is an admin and the player to kick isn't the player himself
+	   {
+            if(!%client.isSuperAdmin && %arg1.isAdmin) // only super admins can kick admins
+            {
+               messageClient(%client, '', '\c2You can not kick %1, %2 is an Admin!', %arg1.name, %arg1.sex $= "Male" ? 'he' : 'she');
+	         return;
+            }
+            Game.kickClientName = %arg1.name;
+            kick(%arg1, %client, %arg1.guid); // kick the player without entering the vote process
+            %authInfo = %arg1.getAuthInfo();
+            adminLog(%client, " kicked " @ %arg1.nameBase @ "( " @ getField(%authInfo, 0) @ ", " @ getField(%authInfo, 1) @ ", " @ %arg1.guid @ ", " @ %arg1.getAddress() @ ")");
+         }
+         else // normal vote
+         {
+            if(%arg1.isAdmin) // don't let players to kick admins
+            {
+               messageClient(%client, '', '\c2You can not kick %1, %2 is an Admin!', %arg1.name, %arg1.sex $= "Male" ? 'he' : 'she');
+               return;
+            }
+            if(%client.team != %arg1.team && %arg1.team != 0) // kick works only with teammates or observers
+            {
+               messageClient(%client, '', '\c2Kick votes must be team based.');
+               return;
+            }
+            if(Game.scheduleVote !$= "") // a vote is already in progress
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            Game.kickClient = %arg1;
+            Game.kickClientName = %arg1.name;
+            Game.kickGuid = %arg1.guid;
+            Game.kickTeam = %arg1.team;
+            if(%arg1.team != 0 && Game.numTeams > 1)
+            {
+               for(%idx = 0; %idx < ClientGroup.getCount(); %idx++) 
+               {
+                  %cl = ClientGroup.getObject(%idx);
+
+                  	if (%cl.isAdmin == true || (%cl.team == %client.team && !%cl.isAIControlled()))
+					{   
+						if(%cl.isAdmin == true && %cl.team !$= %client.team) {
+							messageClient(%cl, 'AdminOtherTeamKickVoteStarted', '\c2%1 has initiated a vote to kick %2 on the \c3Other Team.~wgui/objective_notification.wav', %client.name, %arg1.name);
+						}
+						else
+						messageClient( %cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, %actionMsg, %arg1.name); 
+						%clientsVoting++;
+					}
+               }
+               playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting, true);
+            }
+            else
+            {
+               for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+               {
+                  %cl = ClientGroup.getObject(%idx);
+                  if(!%cl.isAIControlled())
+                  {
+                     messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, "kick player", %arg1.name);
+                     %clientsVoting++;
+                  }
+               }
+               playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+            }
+         }
+
+      case "BanPlayer":
+         if((%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminBan)) && %client != %arg1) // only admins can use ban
+         {
+            if(!%client.isSuperAdmin && %arg1.isAdmin) // only super admins can ban admins
+            {
+               messageClient(%client, '', '\c2You can not ban %1, %2 is an Admin!', %arg1.name, %arg1.sex $= "Male" ? 'he' : 'she');
+               return;
+            }
+            ban(%arg1, %client); // ban the player without entering the vote process
+            %authInfo = %arg1.getAuthInfo();
+            adminLog(%client, " banned " @ %arg1.nameBase @ "( " @ getField(%authInfo, 0) @ ", " @ getField(%authInfo, 1) @ ", " @ %arg1.guid @ ", " @ %arg1.getAddress() @ ")");
+         }
+      
+      case "VoteAdminPlayer":
+         if((%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminAdmin)) && %client != %arg1)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " made " @ %arg1.nameBase @ " an Admin.");
+         }
+         else if($Host::allowAdminPlayerVotes) // normal vote
+         {
+            if((ClientGroup.getCount() - $HostGameBotCount) < $Host::EvoAdminMinPlayers)
+               return; // ther aren't enough players
+
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, "admin player", %arg1.name);
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+
+      case "VoteChangeMission":
+         if(%isAdmin && !%client.ForceVote )
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " changed the mission to " @ %arg1 @ " (" @ %arg2 @ ")");
+         }
+         else if($Host::TournamentMode || (!$Host::TournamentMode && $Host::EvoAllowPlayerVoteChangeMission))
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            %mission = $HostMissionFile[%arg3];
+            %missionType = $HostTypeName[%arg4];
+            if(!checkMapExist(%mission, %missionType))
+               return; // map doesn't exist
+
+            if(!$Host::TournamentMode && $Host::MapFFA[%mission, %missionType] !$= "" && $Host::MapFFA[%mission, %missionType] == 0)
+               return; // is FFA, but the map can't be played in FFA
+
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3 (%4).', %client.name, "change the mission to", %arg1, %arg2);
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+
+      case "VoteFFAMode":
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " changed the server to FFA Mode.");
+         }
+         else
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 Free For All Mode.', %client.name, "change the server to");
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+
+      case "VoteFFA2Mode": // allow players to choose the mission
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " changed the server to FFA Mode.");
+         }
+         else
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            %mission = $HostMissionFile[%arg3];
+            %missionType = $HostTypeName[%arg4];
+            if(!checkMapExist(%mission, %missionType))
+               return; // map doesn't exist
+
+            if($Host::MapFFA[%mission, %missionType] !$= "" && $Host::MapFFA[%mission, %missionType] == 0)
+               return; // the map can't be played in FFA
+
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 Free For All Mode (%3).', %client.name, "change the server to", %arg1);
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+
+      case "VoteTournamentMode":
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " changed the server to Tournament Mode " @ %arg1 @ " (" @ %arg2 @ ")");
+         }
+         else if(!$Host::TournamentMode && $Host::EvoAllowPlayerVoteTournamentMode)
+         {
+            if(getAdmin() == 0)
+            {
+               messageClient(%client, 'clientMsg', 'There must be a server admin to play in Tournament Mode.');
+               return;
+            }
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 Tournament Mode (%3).', %client.name, "change the server to", %arg1);
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+
+      case "VoteMatchStart":
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " started the match.");
+         }
+         else
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, "start the match");
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+
+      case "CancelMatchStart":
+         if(%isAdmin) // only admins can cancel match start
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " canceled match start.");
+         }
+
+      case "VoteTeamDamage":
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, (%arg1 $= "enable team damage" ? " ENABLED team damage." : " DISABLED team damage."));
+         }
+         else if($Host::TournamentMode || (!$Host::TournamentMode && $Host::EvoAllowPlayerVoteTeamDamage))
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            %actionMsg = $TeamDamage ? "disable team damage" : "enable team damage";
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, %actionMsg);
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+
+      case "VoteChangeTimeLimit":
+         if(%isAdmin && !%client.ForceVote )
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " changed the time limit to " @ %arg1);
+         }
+         else if($Host::TournamentMode || (!$Host::TournamentMode && $Host::EvoAllowPlayerVoteTimeLimit))
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, "change the time limit to", %arg1);
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+
+      case "VoteGreedMode":
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, (%arg1 $= "enable greed mode" ? " ENABLED Greed mode." : " DISABLED Greed mode."));
+         }
+         else
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            %actionMsg = Game.greedMode ? "disable Greed mode" : "enable Greed mode";
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, %actionMsg);
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+
+      case "VoteHoardMode":
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, (%arg1 $= "enable hoard mode" ? " ENABLED Hoard mode." : " DISABLED Hoard mode."));
+         }
+         else
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            %actionMsg = Game.hoardMode ? "disable Hoard mode" : "enable Hoard mode";
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, %actionMsg);
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+
+      case "VoteETMMode":
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " changed the server to enhanced Tournament Mode " @ %arg1 @ " (" @ %arg2 @ ")");
+         }
+
+      case "modSwitcher":
+         if((%client.isSuperAdmin && $Host::EvoSuperAdminSwitch) || (%client.isAdmin && $Host::EvoAdminSwitch))
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " switched the mod to BASE.");
+         }
+      
+      case "cancelSwitchMod":
+         if((%client.isSuperAdmin && $Host::EvoSuperAdminSwitch) || (%client.isAdmin && $Host::EvoAdminSwitch))
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " canceled mod switch.");
+         }
+
+      case "passRunningVote":
+         if ((%client.isSuperAdmin && $Host::EvoSuperPassVote) || (%client.isAdmin && $Host::EvoAdminPassVote))
+         {
+            adminStartNewVote( %client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " passed the vote in progress.");
+         }
+ 
+      case "stopRunningVote":
+         if(%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminStopVotes))
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " stopped the vote in progress.");
+         }
+
+      case "VoteResetServer":
+         if((%client.isSuperAdmin && $Host::EvoSuperAdminReset) || (%client.isAdmin && $Host::EvoAdminReset))
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " resetted the server.");
+         }
+
+      case "ForceVote":
+         if (%client.isAdmin && $Host::EvoForcedVotes)
+         {
+            if (%client.ForceVote)
+            {
+               %client.ForceVote = 0;
+               messageClient( %client, '', 'Vote to ... cancelled.' );
+            }
+            else
+            {
+               %client.ForceVote = 2;
+               messageClient( %client, '', "Now select what to vote on, please." );
+            }
+         }
+
+      case "switchCRCCheck":
+         if($Host::EvoSuperAdminCRCCheck && (%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminCRCCheck)))
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, (%arg1 $= "Enable CRC Check" ? " ENABLED CRC Check." : " DISABLED CRC Check."));
+         }
+
+      case "cancelServerRestart":
+         if(%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminCRCCheck))
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " canceled a server restart.");
+         }
+
+      case "clearServerForMatch":
+         if ((%client.isSuperAdmin && $Host::EvoSuperClearServer) || (%client.isAdmin && $Host::EvoAdminClearServer))
+         {
+            adminStartNewVote( %client, %typename, %arg1, %arg2, %arg3, %arg4 );
+            adminLog(%client, " cleared server for match.");
+         }
+
+      case "showServerRules":
+         if (($Host::EvoServerRules[1] !$= "") && (!%client.CantView))
+         {
+            for ( %i = 1; $Host::EvoServerRules[%i] !$= ""; %i++ )
+            {
+               messageClient(%client, 'ServerRule', '\c2%1', $Host::EvoServerRules[%i] );
+            }
+            %client.cantView = true;
+            %client.schedViewRules = schedule( 10000, %client, "resetViewSchedule", %client );
+         }
+      //
+      // sonic9k 11/6/2003 - Added support for LakRabbit DuelMode option
+      //
+      case "VoteDuelMode":
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+         }
+         else
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 Duel Mode.', %client.name, (Game.duelMode) ? "disable" : "enable");
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+      //
+      // sonic9k 11/6/2003 - Added support for LakRabbit SplashDamage option
+      //
+      case "VoteSplashDamage":
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+         }
+         else
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 No Splash Damage.', %client.name, (Game.noSplashDamage) ? "disable" : "enable");
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+      //---------------------------- CLASSIC MOD
+      case "VoteArmorLimits":
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, %arg3);
+         }
+
+      case "VoteRandomTeams":
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, %arg3);
+         }
+         else
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, %arg3, %arg1);
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+   }
+}
+
+function resetViewSchedule(%client)
+{
+  %client.cantView = false;
+  %client.schedViewRules = "";
+}
+
+// autoVote(%typeName, %arg1, %arg2, %arg3, %arg4)
+// Info: Auto start a new vote
+function autoVote(%typeName, %arg1, %arg2, %arg3, %arg4)
+{
+   // works only for kicking players or skipping mission
+   if(%typeName !$= "VoteKickPlayer" && %typeName !$= "VoteSkipMission")
+      return;
+
+   // only works for FFA mode
+   if($Host::TournamentMode)
+      return;
+  
+   // a vote is already running, cancel it
+   if(Game.scheduleVote !$= "")
+      stopCurrentVote();
+  
+   %clientsVoting = 0;
+  
+   if(%typeName $= "VoteKickPlayer")
+   {
+      // admins can't be kicked
+      if(%arg1.isAdmin)
+	   return;
+      
+      Game.kickClient = %arg1;
+      Game.kickClientName = %arg1.name;
+      Game.kickGuid = %arg1.guid;
+      Game.kickTeam = %arg1.team;
+      
+      for(%idx = 0; %idx < ClientGroup.getCount(); %idx++) 
+	{
+	   %cl = ClientGroup.getObject(%idx);
+	   if(%cl.team == %arg1.team && !%cl.isAIControlled() && %cl !$= %arg1)
+	   {   
+	      messageClient(%cl, 'VoteStarted', '\c2Vote initiated to kick the teamkiller %1.', %arg1.name); 
+	      %clientsVoting++;
+	   }
+	}
+      
+      for(%clientIndex = 0; %clientIndex < ClientGroup.getCount(); %clientIndex++) 
+	{
+	   %cl = ClientGroup.getObject(%clientIndex);
+	   if(%cl.team == %arg1.team && !%cl.isAIControlled() && %cl !$= %arg1)
+	      messageClient(%cl, 'openVoteHud', "", %clientsVoting, ($Host::VotePassPercent / 100));    
+	}
+   }
+   else if(%typeName $= "VoteSkipMission")
+   {
+      if(!checkMapExist(%arg1, %arg2))
+	   return; // map doesn't exist
+      
+      if($Host::MapFFA[%arg1, %arg2] !$= "" && $Host::MapFFA[%arg1, %arg2] == 0)
+	   return; // the map can't be played in FFA
+      
+      // don't start the vote if the server is empty
+      if((ClientGroup.getCount() - $HostGameBotCount) == 0)
+	   return;
+      
+      for(%idx = 0; %idx < ClientGroup.getCount(); %idx++) 
+	{
+	   %cl = ClientGroup.getObject(%idx);
+	   if(!%cl.isAIControlled() && %cl.isReady)
+	   {   
+	      messageClient(%cl, 'VoteStarted', '\c2Vote initiated to skip the mission to %1.', %arg1); 
+	      %clientsVoting++;
+	   }
+	}
+      
+      for(%clientIndex = 0; %clientIndex < ClientGroup.getCount(); %clientIndex++) 
+	{
+	   %cl = ClientGroup.getObject(%clientIndex);
+	   if(!%cl.isAIControlled() && %cl.isReady)
+	      messageClient(%cl, 'openVoteHud', "", %clientsVoting, ($Host::VotePassPercent / 100));    
+	}
+   }
+   clearVotes();
+   Game.voteType = %typeName;
+   Game.scheduleVote = schedule(($Host::VoteTime * 1000), 0, "calcVotes", %typeName, %arg1, %arg2, %arg3, %arg4);
+   Game.scheduleVoteArgs[typename] = %typename;
+   Game.scheduleVoteArgs[arg1]     = %arg1;
+   Game.scheduleVoteArgs[arg2]     = %arg2;
+   Game.scheduleVoteArgs[arg3]     = %arg3;
+   Game.scheduleVoteArgs[arg4]     = %arg4;
+}
+
+// calcVotes(%typeName, %arg1, %arg2, %arg3, %arg4)
+// Info: fixed a bug that doesn't close properly the vote hud
+function calcVotes(%typeName, %arg1, %arg2, %arg3, %arg4)
+{
+   if(%typeName $= "voteMatchStart")
+   {
+      if(($MatchStarted || $countdownStarted) && Game.scheduleVote !$= "")
+      {
+         stopCurrentVote();
+         return;
+      }
+   }
+   
+   for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+   {
+      %cl = ClientGroup.getObject(%idx);
+      messageClient(%cl, 'closeVoteHud', "");
+      
+      if(%cl.vote !$= "") 
+      {
+         if(%cl.vote) 
+         {
+            Game.votesFor[%cl.team]++;
+            Game.totalVotesFor++;
+         } 
+         else 
+         {
+            Game.votesAgainst[%cl.team]++;
+            Game.totalVotesAgainst++;
+         }
+      }
+      else 
+      {
+         Game.votesNone[%cl.team]++;
+         Game.totalVotesNone++;
+      }
+   }   
+
+   Game.evalVote(%typeName, false, %arg1, %arg2, %arg3, %arg4);
+   Game.scheduleVote = "";
+   Game.scheduleVoteArgs = "";
+   Game.kickClient = "";
+   clearVotes();
+}
+
+// passCurrentVote()
+// Info: passes a vote that is running.
+function passCurrentVote() // Edit GG
+{
+   cancel(Game.scheduleVote);
+   Game.totalVotesFor = ClientGroup.getCount() - $HostGameBotCount;
+   Game.totalVotesAgainst = 0;
+   Game.evalVote(Game.scheduleVoteArgs[typeName], false, Game.scheduleVoteArgs[arg1], Game.scheduleVoteArgs[arg2], Game.scheduleVoteArgs[arg3], Game.scheduleVoteArgs[arg4]);
+   Game.scheduleVote = "";
+   Game.scheduleVoteArgs = "";
+   Game.kickClient = "";
+   for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+   {
+      %cl = ClientGroup.getObject(%idx);
+      messageClient(%cl, 'closeVoteHud', "");
+      if(%cl.team != 0)
+         clearBottomPrint(%cl);
+   }
+   clearVotes();
+}
+
+// stopCurrentVote()
+// Info: stop a vote that is still running
+function stopCurrentVote()
+{
+   cancel(Game.scheduleVote);
+   Game.scheduleVote = "";
+   Game.kickClient = "";
+   Game.scheduleVoteArgs = "";
+   for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+   {
+      %cl = ClientGroup.getObject(%idx);
+      messageClient(%cl, 'closeVoteHud', "");
+      if(%cl.team != 0)
+         clearBottomPrint(%cl);
+   }
+   clearVotes();
+}
+
+// adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4)
+// Info: handle an admin vote
+function adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4)
+{
+   // this function handle only admin votes
+   if(%client.isAdmin && %client != %arg1)
+   {
+      if(Game.scheduleVote !$= "" && Game.voteType $= %typeName) 
+      {
+         messageAll('closeVoteHud', "");
+         cancel(Game.scheduleVote);
+         Game.scheduleVote = "";
+         Game.scheduleVoteArgs = "";
+      }
+      Game.evalVote(%typeName, true, %arg1, %arg2, %arg3, %arg4);
+   }
+}
+
+// playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting, %teamSpecific)
+// Info: handle a player vote
+function playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting, %teamSpecific)
+{
+   if(!%teamSpecific) // isn't a team specific vote (kick)
+   {
+      for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+      {
+         %cl = ClientGroup.getObject(%idx);
+         if(!%cl.isAIControlled())
+            messageClient(%cl, 'openVoteHud', "", %clientsVoting, ($Host::VotePassPercent / 100));
+      }
+   }
+   else // is a team specific vote (kick)
+   {
+      for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+      {
+         %cl = ClientGroup.getObject(%idx);
+         if(%cl.team == %client.team && !%cl.isAIControlled())
+            messageClient(%cl, 'openVoteHud', "", %clientsVoting, ($Host::VotePassPercent / 100));
+      }
+   }
+   clearVotes();
+   Game.voteType = %typeName;
+   Game.scheduleVote = schedule(($Host::VoteTime * 1000), 0, "calcVotes", %typeName, %arg1, %arg2, %arg3, %arg4);
+   Game.scheduleVoteArgs[typename] = %typename;
+   Game.scheduleVoteArgs[arg1]     = %arg1;
+   Game.scheduleVoteArgs[arg2]     = %arg2;
+   Game.scheduleVoteArgs[arg3]     = %arg3;
+   Game.scheduleVoteArgs[arg4]     = %arg4;
+   %client.vote = true;
+   messageAll('addYesVote', "");
+   if(%client.team != 0)
+      clearBottomPrint(%client);
+
+   %client.canVote = false;
+   %client.rescheduleVote = schedule(($Host::voteSpread * 1000) + ($Host::voteTime * 1000) , 0, "resetVotePrivs", %client);
+}
+
+function setModeFFA(%mission, %missionType)
+{
+   if($Host::TournamentMode)
+   {
+      if(isObject(Game))
+         Game.gameOver();
+      
+      $Host::TournamentMode = false;
+      
+      if($Evo::ETMMode)
+      	ETMreset();
+   	
+      $Evo::ETMMode = false;
+      
+      loadMission(%mission, %missionType, false);   
+   }
+}
+
+function setModeTournament(%mission, %missionType)
+{
+   if(!$Host::TournamentMode)
+   {
+      if(isObject(Game))
+         Game.gameOver();
+      
+      $Host::TournamentMode = true;
+      $Evo::ETMMode = false;
+         
+      loadMission(%mission, %missionType, false);   
+   }
+}
+
+function setModeETM(%mission, %missionType)
+{
+   if(isObject(Game))
+      Game.gameOver();
+   
+   $Host::TournamentMode = true;
+   $Evo::ETMMode = true;
+   
+   CycleMissions();   
+}

@@ -1,0 +1,85 @@
+// sendModInfoToClient(%client)
+// Info: During the briefing, shows server settings (source: classic mod)
+function sendModInfoToClient(%client)
+{
+   %time = "<color:D2C27F>Time limit: <color:29DEE7>" @ $Host::TimeLimit;
+   %max = "<color:D2C27F>Max players: <color:29DEE7>" @ $Host::MaxPlayers;
+   %td = "<color:D2C27F>Team damage: <color:29DEE7>" @ ($Host::TeamDamageOn ? "On" : "Off");
+   %crc = "<color:D2C27F>CRC checking: <color:29DEE7>" @ ($Host::CRCTextures ? "On" : "Off");
+   %pure = "<color:D2C27F>Pure server: <color:29DEE7>" @ ($Host::PureServer ? "On" : "Off");
+   %smurf = "<color:D2C27F>Refuse smurfs: <color:29DEE7>" @ ($Host::NoSmurfs ? "On" : "Off");
+   %random = "<color:D2C27F>Random teams: <color:29DEE7>" @ ($RandomTeams ? "On" : "Off");
+   %fair = "<color:D2C27F>Fair teams: <color:29DEE7>" @ ($Host::ClassicFairTeams ? "On" : "Off");
+   %rape = "<color:D2C27F>No Base Rape: <color:29DEE7>" @ ($Host::EvoNoBaseRapeEnabled ? "On" : "Off");
+   %net = "<color:D2C27F>Packets Rate / Size: <color:29DEE7>" @ $pref::Net::PacketRateToClient @ " / " @ $pref::Net::PacketSize;
+
+   if($Host::EvoStats && (!$Host::TournamentMode || ($Host::TournamentMode && $Host::EvoStatsTourney)) && $Host::EvoStatsType != 0)
+      %stats = "<color:D2C27F>Stats based on: <color:29DEE7>" @ ($Host::EvoStatsType == 1 ? "Kills" : "Damage");
+
+   if($Host::EvoNoBaseRapeEnabled)
+   	%rapeppl = "<color:D2C27F>No Base Rape Min players: <color:29DEE7>" @ $Host::EvoNoBaseRapeClassicPlayerCount;
+
+   if($Evo::ETMMode && $ETMmode::CurrentMap <= $ETMmode::Counter)
+   {
+   	%nmis = "<color:D2C27F>Next mission: <color:29DEE7>" @ $ETMmode::MapDisplayName[$ETMmode::CurrentMap];
+   }
+   else
+   {
+       %nmis = "<color:D2C27F>Next mission: <color:29DEE7>" @ findNextCycleMission();
+       if ( $Host::ClassicRandomMissions )
+	 {
+	   %nmis = %nmis SPC "(Random)";
+	 }
+   }
+
+
+	// classic doesn't use a variable to print the version, it needs to be edited manually
+   %modName = "Classic " @ $classicVersion @ " running Classic Evolution Admin Mod " @ $EvoVersion;
+   %ModLine[0] = "<spush><font:Arial:14><a:www.t2discord.tk><color:5555FF>http://www.t2discord.tk</a><spop>\n<color:D2C27F>Classic Developers: <color:29DEE7><a:PLAYER\tz0dd>z0dd</a> and <a:PLAYER\t-ZOD->ZOD</a>";
+
+   %ModCnt = 1;
+
+   %SpecialCnt = 5;
+   %SpecialTextLine[0] = %random;
+   %SpecialTextLine[1] = %fair;
+   %SpecialTextLine[2] = %net;
+   %SpecialTextLine[3] = %stats;
+   %SpecialTextLine[4] = %nmis;
+
+   %ServerCnt = 8;
+   %ServerTextLine[0] = %time;
+   %ServerTextLine[1] = %max;
+   %ServerTextLine[2] = %td;
+   %serverTextLine[3] = %crc;
+   %ServerTextLine[4] = %pure;
+   %ServerTextLine[5] = %smurf;
+   %ServerTextLine[6] = %rape;
+   %ServerTextLine[7] = %rapeppl;
+
+   %singlePlayer = $CurrentMissionType $= "SinglePlayer";
+   messageClient(%client, 'MsgLoadInfo', "", $CurrentMission, %modName, $Host::GameName);
+
+   // Send mod details (non bulleted list, small text):
+   for(%line = 0; %line < %ModCnt; %line++)
+      if(%ModLine[%line] !$= "")
+         messageClient(%client, 'MsgLoadQuoteLine', "", %ModLine[%line]);
+
+   // Send mod special settings (bulleted list, large text):
+   for(%line = 0; %line < %SpecialCnt; %line++)
+      if(%SpecialTextLine[%line] !$= "")
+         messageClient(%client, 'MsgLoadObjectiveLine', "", %SpecialTextLine[%line], !%singlePlayer);
+
+   // Send server info:
+   if(!%singlePlayer)
+      messageClient(%client, 'MsgLoadRulesLine', "", "<color:29DEE7>" @ $Host::Info, false);
+
+   for(%line = 0; %line < %ServerCnt; %line++)
+      if (%ServerTextLine[%line] !$= "")
+         messageClient(%client, 'MsgLoadRulesLine', "", %ServerTextLine[%line], !%singlePlayer);
+         
+   messageClient(%client, 'MsgLoadInfoDone');
+   
+   // z0dd - ZOD, 5/12/02. Send mission info again so as not to conflict with cs scripts.
+   schedule(10000, 0, "sendLoadInfoToClient", %client, true);
+}
+

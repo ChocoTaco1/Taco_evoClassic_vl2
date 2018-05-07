@@ -1,0 +1,25 @@
+
+function StaticShapeData::damageObject(%data, %targetObject, %sourceObject, %position, %amount, %damageType)
+{
+	//echo( %targetObject.getDataBlock().getClassName() );
+	//echo( %targetObject.getDataBlock().getName() );
+
+   // No Base Rape option   
+   if(!$Host::TournamentMode && $Host::EvoNoBaseRapeEnabled && $Host::EvoNoBaseRapeClassicPlayerCount > $TotalTeamPlayerCount)
+   {
+    //  if(%targetObject.getDataBlock().getClassName() !$= "TurretData" && !%targetObject.getDataBlock().deployedObject)
+		%targetname = %targetObject.getDataBlock().getName();            
+	
+			if(%targetname $= "GeneratorLarge" || %targetname $= "StationInventory") {
+			PlayerNotifyEnabled::OnDamage( %game, %sourceObject );
+			return;
+			}
+			if(%targetname $= "SolarPanel" && $stalemate $= false) {
+			PlayerNotifyEnabled::OnDamage( %game, %sourceObject );
+			return;
+			}	
+			
+   }
+   Parent::damageObject(%data, %targetObject, %sourceObject, %position, %amount, %damageType);
+}
+
