@@ -423,9 +423,9 @@ if($Host::EvoStats)
 
    	// classic uses only storm/inferno
       if(%game.getTeamName(%client.team) $= 'Inferno' || ($Evo::ETMMode && (%otherTeam $= $ETMmode::Team[$ETMCMap, 2])))
-         messageAll("", '~wvoice/announcer/ann.infscores.wav');
+         messageAll("", '~wfx/misc/flag_capture.wav');
       else if(%game.getTeamName(%client.team) $= 'Storm' || ($Evo::ETMMode && (%otherTeam $= $ETMmode::Team[$ETMCMap, 1])))
-         messageAll("", '~wvoice/announcer/ann.stoscores.wav');
+         messageAll("", '~wfx/misc/flag_capture.wav');
    }
    
    //ResetNotify
