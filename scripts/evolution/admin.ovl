@@ -540,7 +540,33 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                %cl = ClientGroup.getObject(%idx);
                if(!%cl.isAIControlled())
                {
-                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 No Splash Damage.', %client.name, (Game.noSplashDamage) ? "disable" : "enable");
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 Splash Damage.', %client.name, (Game.SplashDamage) ? "disable" : "enable");
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+	  //
+      // chocotaco 8/7/2018 - Added support for LakRabbit Pro option
+      //
+      case "VotePro":
+         if(%isAdmin)
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+         }
+         else
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 Pro Mode.', %client.name, (Game.VotePro) ? "disable" : "enable");
                   %clientsVoting++;
                }
             }
