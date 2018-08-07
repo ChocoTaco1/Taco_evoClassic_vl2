@@ -1300,6 +1300,7 @@ function DefaultGame::voteChangeMission(%game, %admin, %missionDisplayName, %typ
    {
       messageAll('MsgAdminChangeMission', '\c2The Admin has changed the mission to %1 (%2).', %missionDisplayName, %typeDisplayName);   
       logEcho("mission changed to " @ %missionDisplayName @ "/" @ %typeDisplayName @ " (admin)");
+	  $VoteSoundInProgress = false;
       %game.gameOver();
       
       if($Evo::ETMMode) // player changed the mission, stop ETM mode
@@ -1319,7 +1320,8 @@ function DefaultGame::voteChangeMission(%game, %admin, %missionDisplayName, %typ
       {
          messageAll('MsgVotePassed', '\c2The mission was changed to %1 (%2) by vote.', %missionDisplayName, %typeDisplayName); 
          logEcho("mission changed to " @ %missionDisplayName @ "/" @ %typeDisplayName @ " (vote)");
-         %game.gameOver();
+         $VoteSoundInProgress = false;
+		 %game.gameOver();
 
          if($Evo::ETMMode) // player changed the mission, stop ETM mode
          {
@@ -1328,13 +1330,13 @@ function DefaultGame::voteChangeMission(%game, %admin, %missionDisplayName, %typ
          }   
          loadMission(%mission, %missionType, false);   
       }
-      else
+      else {
+		 $VoteSoundInProgress = false;
          messageAll('MsgVoteFailed', '\c2Change mission vote did not pass: %1 percent.', mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100));
+	  }
    }
 }
 
-// voteFFA2Mode(%game, %admin, %missionDisplayName, %typeDisplayName, %missionId, %missionTypeId)
-// Info: Now you can choose the FFA map to change to (need pizza client)
 function DefaultGame::voteFFA2Mode(%game, %admin, %missionDisplayName, %typeDisplayName, %missionId, %missionTypeId)
 {
    %mission = $HostMissionFile[%missionId];
@@ -1350,6 +1352,7 @@ function DefaultGame::voteFFA2Mode(%game, %admin, %missionDisplayName, %typeDisp
    {
       messageAll('MsgAdminForce', '\c2The Admin has switched the server to Free For All mode.');   
       setModeFFA(%mission, %missionType); 
+	  $VoteSoundInProgress = false;
    }
    else 
    {
@@ -1359,15 +1362,13 @@ function DefaultGame::voteFFA2Mode(%game, %admin, %missionDisplayName, %typeDisp
       {
          messageAll('MsgVotePassed', '\c2Server switched to Free For All mode by vote.'); 
          setModeFFA(%mission, %missionType); 
+		 $VoteSoundInProgress = false;
       }
       else 
          messageAll('MsgVoteFailed', '\c2Free For All mode vote did not pass: %1 percent.', mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100)); 
    }
 }
 
-// voteFFAMode
-// Info: Changed that it loads the standard rotation maps again when exiting
-//       Tournament mode without pizza client
 function DefaultGame::voteFFAMode( %game, %admin, %client )
 {
    %cause = "";
@@ -1377,6 +1378,7 @@ function DefaultGame::voteFFAMode( %game, %admin, %client )
       messageAll('MsgAdminForce', '\c2The Admin has switched the server to Free For All mode.', %client);
       setModeFFA( findNextCycleMission(), $CurrentMissionType);
       %cause = "(admin)";
+	  $VoteSoundInProgress = false;
    }
    else
    {
@@ -1387,16 +1389,17 @@ function DefaultGame::voteFFAMode( %game, %admin, %client )
          messageAll('MsgVotePassed', '\c2Server switched to Free For All mode by vote.', %client);
          setModeFFA( findNextCycleMission(), $CurrentMissionType);
          %cause = "(vote)";
+		 $VoteSoundInProgress = false;
       }
-      else
-         messageAll('MsgVoteFailed', '\c2Free For All mode vote did not pass: %1 percent.', mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100));
+      else {
+         $VoteSoundInProgress = false;
+		 messageAll('MsgVoteFailed', '\c2Free For All mode vote did not pass: %1 percent.', mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100));
+	  }
    }
    if(%cause !$= "")
       logEcho("free for all set "@%cause);
 }
 
-// voteChangeTimeLimit(%game, %admin, %newLimit)
-// Info: Added option to reset time limit to default on map change
 function DefaultGame::voteChangeTimeLimit(%game, %admin, %newLimit)
 {
    if(%newLimit == 999)
@@ -1407,10 +1410,13 @@ function DefaultGame::voteChangeTimeLimit(%game, %admin, %newLimit)
    %cause = "";
    if(%admin)
    {
-      messageAll('MsgAdminForce', '\c2The Admin changed the mission time limit to %1 minutes.', %display);
+      $VoteInProgress = false;
+	  $TimeLimitChanged = true;
+	  $VoteSoundInProgress = false;
+	  messageAll('MsgAdminForce', '\c2The Admin changed the mission time limit to %1 minutes.', %display);
       $Host::TimeLimit = %newLimit;
       %cause = "(admin)";
-
+	  
 		// reset the voted time limit when changing mission
       if($Host::EvoDefaultTimeLimit)
       	$Evo_DefaultTimeLimit = 1;
@@ -1419,18 +1425,27 @@ function DefaultGame::voteChangeTimeLimit(%game, %admin, %newLimit)
    {
       %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
       // Added people who dont vote into the equation, now if you do not vote, it doesn't count as a no. - ZOD
+	  // Changed it back. Choco
       if(%totalVotes > 0 && (%game.totalVotesFor / (ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone)) > ($Host::VotePasspercent / 100))
       {
          messageAll('MsgVotePassed', '\c2The mission time limit was set to %1 minutes by vote.', %display);   
-         $Host::TimeLimit = %newLimit;
+		 $Host::TimeLimit = %newLimit;
          %cause = "(vote)";
+		 $VoteInProgress = false;
+		 $TimeLimitChanged = true;
+		 $VoteSoundInProgress = false;
 
          // reset the voted time limit when changing mission
          if($Host::EvoDefaultTimeLimit)
          	$Evo_DefaultTimeLimit = 1;
       }
       else 
-         messageAll('MsgVoteFailed', '\c2The vote to change the mission time limit did not pass: %1 percent.', mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100));   
+	  {
+		messageAll('MsgVoteFailed', '\c2The vote to change the mission time limit did not pass: %1 percent.', mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100));
+		$VoteInProgress = false;
+		$TimeLimitChanged = false;
+		$VoteSoundInProgress = false;
+	  }
    }
 
    //if the time limit was actually changed...
@@ -1460,8 +1475,6 @@ function DefaultGame::voteChangeTimeLimit(%game, %admin, %newLimit)
    }
 }
 
-// sendTimeLimitList(%game, %client, %key)
-// Info: Server Admin can choose the time limit list in FFA mode (see Evo_prefs.cs)
 function DefaultGame::sendTimeLimitList(%game, %client, %key)
 {
    if(!$Host::TournamentMode)
@@ -1487,35 +1500,40 @@ function DefaultGame::passRunningVote(%game, %admin, %arg1, %arg2, %arg3, %arg4)
    if ( %admin && Game.scheduleVote !$= "" )
    {
       passCurrentVote();
+	  $VoteInProgress = false;
+	  $TimeLimitChanged = false;
+	  $VoteSoundInProgress = false;
       messageAll('MsgAdminForce', '\c2The admin has passed the vote.' );
    }
 }
 
-// stopRunningVote(%admin)
-// Info: Allow admins to stop running votes
 function DefaultGame::stopRunningVote(%game, %admin, %arg1, %arg2, %arg3, %arg4)
 {
    if(%admin && Game.scheduleVote !$= "")
    {
       stopCurrentVote();
+	  $VoteInProgress = false;
+      $TimeLimitChanged = false;
+	  $VoteSoundInProgress = false;
       messageAll('MsgAdminForce', '\c2The Admin stopped the vote.~wfx/misc/bounty_completed.wav');
    }
 }
 
-// voteSkipMission(%game, %admin, %missionName, %missionType, %arg3, %arg4)
-// Info: Skip the mission once the vote is passed
 function DefaultGame::voteSkipMission(%game, %admin, %missionName, %missionType, %arg3, %arg4)
 {
    %realTotalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
    %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst + %game.totalVotesNone;
    if(%realTotalVotes > 0 && (%game.totalVotesFor / %totalVotes) > ($Host::VotePasspercent / 100))
    {
-      messageAll('MsgVotePassed', '\c2The mission was skipped to %1 by vote.', %missionName); 
+      $VoteSoundInProgress = false;
+	  messageAll('MsgVotePassed', '\c2The mission was skipped to %1 by vote.', %missionName); 
       %game.gameOver();
       loadMission(%missionName, %missionType, false);   
    }
-   else
+   else {
+	  $VoteSoundInProgress = false;
       messageAll('MsgVoteFailed', '\c2Skip mission vote did not pass: %1 percent.', mFloor(%game.totalVotesFor/%totalVotes * 100));
+   }
 }
 
 // switchCRCCheck(%game, %admin, %arg1, %arg2, %arg3, %arg4)

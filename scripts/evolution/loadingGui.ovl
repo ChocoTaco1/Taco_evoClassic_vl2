@@ -2,30 +2,30 @@
 // Info: During the briefing, shows server settings (source: classic mod)
 function sendModInfoToClient(%client)
 {
-   %time = "<color:D2C27F>Time limit: <color:29DEE7>" @ $Host::TimeLimit;
-   %max = "<color:D2C27F>Max players: <color:29DEE7>" @ $Host::MaxPlayers;
-   %td = "<color:D2C27F>Team damage: <color:29DEE7>" @ ($Host::TeamDamageOn ? "On" : "Off");
-   %crc = "<color:D2C27F>CRC checking: <color:29DEE7>" @ ($Host::CRCTextures ? "On" : "Off");
-   %pure = "<color:D2C27F>Pure server: <color:29DEE7>" @ ($Host::PureServer ? "On" : "Off");
-   %smurf = "<color:D2C27F>Refuse smurfs: <color:29DEE7>" @ ($Host::NoSmurfs ? "On" : "Off");
-   %random = "<color:D2C27F>Random teams: <color:29DEE7>" @ ($RandomTeams ? "On" : "Off");
-   %fair = "<color:D2C27F>Fair teams: <color:29DEE7>" @ ($Host::ClassicFairTeams ? "On" : "Off");
-   %rape = "<color:D2C27F>No Base Rape: <color:29DEE7>" @ ($Host::EvoNoBaseRapeEnabled ? "On" : "Off");
-   %net = "<color:D2C27F>Packets Rate / Size: <color:29DEE7>" @ $pref::Net::PacketRateToClient @ " / " @ $pref::Net::PacketSize;
+   %time = "<color:e8e8ea>Time limit: <color:29DEE7>" @ $Host::TimeLimit;
+   %max = "<color:e8e8ea>Max players: <color:29DEE7>" @ $Host::MaxPlayers;
+   %td = "<color:e8e8ea>Team damage: <color:29DEE7>" @ ($Host::TeamDamageOn ? "On" : "Off");
+   %crc = "<color:e8e8ea>CRC checking: <color:29DEE7>" @ ($Host::CRCTextures ? "On" : "Off");
+   %pure = "<color:e8e8ea>Pure server: <color:29DEE7>" @ ($Host::PureServer ? "On" : "Off");
+   %smurf = "<color:e8e8ea>Refuse smurfs: <color:29DEE7>" @ ($Host::NoSmurfs ? "On" : "Off");
+   %random = "<color:e8e8ea>Random teams: <color:29DEE7>" @ ($RandomTeams ? "On" : "Off");
+   %fair = "<color:e8e8ea>Fair teams: <color:29DEE7>" @ ($Host::ClassicFairTeams ? "On" : "Off");
+   %rape = "<color:e8e8ea>No Base Rape: <color:29DEE7>" @ ($Host::EvoNoBaseRapeEnabled ? "On" : "Off");
+   %net = "<color:e8e8ea>Packets Rate / Size: <color:29DEE7>" @ $pref::Net::PacketRateToClient @ " / " @ $pref::Net::PacketSize;
 
    if($Host::EvoStats && (!$Host::TournamentMode || ($Host::TournamentMode && $Host::EvoStatsTourney)) && $Host::EvoStatsType != 0)
-      %stats = "<color:D2C27F>Stats based on: <color:29DEE7>" @ ($Host::EvoStatsType == 1 ? "Kills" : "Damage");
+      %stats = "<color:e8e8ea>Stats based on: <color:29DEE7>" @ ($Host::EvoStatsType == 1 ? "Kills" : "Damage");
 
    if($Host::EvoNoBaseRapeEnabled)
-   	%rapeppl = "<color:D2C27F>No Base Rape Min players: <color:29DEE7>" @ $Host::EvoNoBaseRapeClassicPlayerCount;
+   	%rapeppl = "<color:e8e8ea>No Base Rape Min players: <color:29DEE7>" @ $Host::EvoNoBaseRapeClassicPlayerCount;
 
    if($Evo::ETMMode && $ETMmode::CurrentMap <= $ETMmode::Counter)
    {
-   	%nmis = "<color:D2C27F>Next mission: <color:29DEE7>" @ $ETMmode::MapDisplayName[$ETMmode::CurrentMap];
+   	%nmis = "<color:e8e8ea>Next mission: <color:29DEE7>" @ $ETMmode::MapDisplayName[$ETMmode::CurrentMap];
    }
    else
    {
-       %nmis = "<color:D2C27F>Next mission: <color:29DEE7>" @ findNextCycleMission();
+       %nmis = "<color:e8e8ea>Next mission: <color:29DEE7>" @ findNextCycleMission();
        if ( $Host::ClassicRandomMissions )
 	 {
 	   %nmis = %nmis SPC "(Random)";
@@ -35,7 +35,7 @@ function sendModInfoToClient(%client)
 
 	// classic doesn't use a variable to print the version, it needs to be edited manually
    %modName = "Classic " @ $classicVersion @ " running Classic Evolution Admin Mod " @ $EvoVersion;
-   %ModLine[0] = "<spush><font:Arial:14><a:www.t2discord.tk><color:5555FF>http://www.t2discord.tk</a><spop>\n<color:D2C27F>Classic Developers: <color:29DEE7><a:PLAYER\tz0dd>z0dd</a> and <a:PLAYER\t-ZOD->ZOD</a>";
+   %ModLine[0] = "<spush><font:Arial:14><a:www.tacostand.tk><color:008ffb>http://www.tacostand.tk</a><spop>\n<color:e8e8ea>Classic Developers: <color:29DEE7><a:PLAYER\tz0dd>z0dd</a> and <a:PLAYER\t-ZOD->ZOD</a>";
 
    %ModCnt = 1;
 
