@@ -73,6 +73,8 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 					}
                }
                playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting, true);
+			   $VoteSoundInProgress = true;
+			   schedule(10000, 0, "VoteSound", %game);
             }
             else
             {
@@ -82,12 +84,12 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                   if(!%cl.isAIControlled())
                   {
                      messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, "kick player", %arg1.name);
-                     $VoteSoundInProgress = true;
-					 schedule(10000, 0, "VoteSound", %game);
 					 %clientsVoting++;
                   }
                }
                playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+			   $VoteSoundInProgress = true;
+			   schedule(10000, 0, "VoteSound", %game);
             }
          }
 
@@ -130,6 +132,8 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+			$VoteSoundInProgress = true;
+			schedule(10000, 0, "VoteSound", %game);
          }
 
       case "VoteChangeMission":
@@ -159,12 +163,12 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                if(!%cl.isAIControlled())
                {
                   messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3 (%4).', %client.name, "change the mission to", %arg1, %arg2);
-				  $VoteSoundInProgress = true;
-				  schedule(10000, 0, "VoteSound", %game);
                   %clientsVoting++;
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+			$VoteSoundInProgress = true;
+			schedule(10000, 0, "VoteSound", %game);
          }
 
       case "VoteFFAMode":
@@ -190,6 +194,8 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+			$VoteSoundInProgress = true;
+			schedule(10000, 0, "VoteSound", %game);
          }
 
       case "VoteFFA2Mode": // allow players to choose the mission
@@ -219,12 +225,12 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                if(!%cl.isAIControlled())
                {
                   messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 Free For All Mode (%3).', %client.name, "change the server to", %arg1);
-                  $VoteSoundInProgress = true;
-				  schedule(10000, 0, "VoteSound", %game);
 				  %clientsVoting++;
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+			$VoteSoundInProgress = true;
+			schedule(10000, 0, "VoteSound", %game);
          }
 
       case "VoteTournamentMode":
@@ -251,12 +257,12 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                if(!%cl.isAIControlled())
                {
                   messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 Tournament Mode (%3).', %client.name, "change the server to", %arg1);
-                  $VoteSoundInProgress = true;
-				  schedule(10000, 0, "VoteSound", %game);
 				  %clientsVoting++;
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+            $VoteSoundInProgress = true;
+			schedule(10000, 0, "VoteSound", %game);
          }
 
       case "VoteMatchStart":
@@ -278,12 +284,12 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                if(!%cl.isAIControlled())
                {
                   messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, "start the match");
-                  $VoteSoundInProgress = true;
-				  schedule(10000, 0, "VoteSound", %game);
 				  %clientsVoting++;
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+			$VoteSoundInProgress = true;
+			schedule(10000, 0, "VoteSound", %game);
          }
 
       case "CancelMatchStart":
@@ -313,12 +319,12 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                if(!%cl.isAIControlled())
                {
                   messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, %actionMsg);
-				  $VoteSoundInProgress = true;
-				  schedule(10000, 0, "VoteSound", %game);
                   %clientsVoting++;
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+			$VoteSoundInProgress = true;
+			schedule(10000, 0, "VoteSound", %game);
          }
 
       case "VoteChangeTimeLimit":
@@ -345,9 +351,9 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
 			$VoteSoundInProgress = true;
-			schedule(10000, 0, "VoteSound", %game);
 			$VoteInProgress = true;
 			$TimeLimitChanged = false;
+			schedule(10000, 0, "VoteSound", %game);
          }
 
       case "VoteGreedMode":
@@ -370,12 +376,12 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                if(!%cl.isAIControlled())
                {
                   messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, %actionMsg);
-                  $VoteSoundInProgress = true;
-				  schedule(10000, 0, "VoteSound", %game);
 				  %clientsVoting++;
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+			$VoteSoundInProgress = true;
+			schedule(10000, 0, "VoteSound", %game);
          }
 
       case "VoteHoardMode":
@@ -398,12 +404,12 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                if(!%cl.isAIControlled())
                {
                   messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, %actionMsg);
-                  $VoteSoundInProgress = true;
-				  schedule(10000, 0, "VoteSound", %game);
 				  %clientsVoting++;
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+			$VoteSoundInProgress = true;
+			schedule(10000, 0, "VoteSound", %game);
          }
 
       case "VoteETMMode":
