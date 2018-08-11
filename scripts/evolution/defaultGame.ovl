@@ -25,6 +25,7 @@ function DefaultGame::onClientKilled(%game, %clVictim, %clKiller, %damageType, %
 function DefaultGame::gameOver(%game)
 {
    Parent::gameOver(%game);
+   
    if($Evo::ETMMode)
    {
       // wait to delete variables
@@ -35,6 +36,13 @@ function DefaultGame::gameOver(%game)
       }
       $ETMCMapUpdated = "";
    }
+   
+	//Reset Everything to do with Vote Overtime
+	$VoteInProgress = false;
+	$TimeLimitChanged = false;
+	$VoteInProgressMessege = false;
+	$VoteSoundInProgress = false;
+	
 }
 
 // CHANGE TEAM NAMES
@@ -1063,6 +1071,7 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
       }
    }
 }
+
 // sendGameVoteMenu( %game, %client, %key )
 // Info: totally re-wrote
 function DefaultGame::sendGameVoteMenu(%game, %client, %key)
@@ -1284,6 +1293,47 @@ function DefaultGame::cancelMatchStart(%game, %admin)
    }
 }
 
+function DefaultGame::voteKickPlayer(%game, %admin, %client)
+{
+   %cause = "";
+   
+   if(%admin) 
+   {
+      kick(%client, %admin, %client.guid );
+      %cause = "(admin)";
+	  $VoteSoundInProgress = false;
+   }
+   else 
+   {
+      %team = %client.team;
+      %totalVotes = %game.votesFor[%game.kickTeam] + %game.votesAgainst[%game.kickTeam];
+      if(%totalVotes > 0 && (%game.votesFor[%game.kickTeam] / %totalVotes) > ($Host::VotePasspercent / 100)) 
+      {
+         kick(%client, %admin, %game.kickGuid);
+         %cause = "(vote)";
+		 $VoteSoundInProgress = false;
+      }
+      else
+      {   
+         for ( %idx = 0; %idx < ClientGroup.getCount(); %idx++ ) 
+         {
+            %cl = ClientGroup.getObject( %idx );
+
+            if (%cl.team == %game.kickTeam && !%cl.isAIControlled())
+               messageClient( %cl, 'MsgVoteFailed', '\c2Kick player vote did not pass' ); 
+         }
+		 $VoteSoundInProgress = false;
+      }
+   }
+   
+   %game.kickTeam = "";
+   %game.kickGuid = "";
+   %game.kickClientName = "";
+
+   if(%cause !$= "")
+      logEcho($AdminCl.nameBase @ ": " @ %name @ " (cl " @ %game.kickClient @ ") kicked " @ %cause, 1);
+}
+
 // voteChangeMission(%game, %admin, %missionDisplayName, %typeDisplayName, %missionId, %missionTypeId)
 // Info: if eTourney is running, switch to normal tournament
 function DefaultGame::voteChangeMission(%game, %admin, %missionDisplayName, %typeDisplayName, %missionId, %missionTypeId)
@@ -1300,7 +1350,6 @@ function DefaultGame::voteChangeMission(%game, %admin, %missionDisplayName, %typ
    {
       messageAll('MsgAdminChangeMission', '\c2The Admin has changed the mission to %1 (%2).', %missionDisplayName, %typeDisplayName);   
       logEcho("mission changed to " @ %missionDisplayName @ "/" @ %typeDisplayName @ " (admin)");
-	  $VoteSoundInProgress = false;
       %game.gameOver();
       
       if($Evo::ETMMode) // player changed the mission, stop ETM mode
@@ -1320,7 +1369,6 @@ function DefaultGame::voteChangeMission(%game, %admin, %missionDisplayName, %typ
       {
          messageAll('MsgVotePassed', '\c2The mission was changed to %1 (%2) by vote.', %missionDisplayName, %typeDisplayName); 
          logEcho("mission changed to " @ %missionDisplayName @ "/" @ %typeDisplayName @ " (vote)");
-         $VoteSoundInProgress = false;
 		 %game.gameOver();
 
          if($Evo::ETMMode) // player changed the mission, stop ETM mode
@@ -1328,7 +1376,7 @@ function DefaultGame::voteChangeMission(%game, %admin, %missionDisplayName, %typ
             $Evo::ETMMode = false;
             ETMreset();
          }   
-         loadMission(%mission, %missionType, false);   
+         loadMission(%mission, %missionType, false);		 
       }
       else {
 		 $VoteSoundInProgress = false;
@@ -1365,6 +1413,7 @@ function DefaultGame::voteFFA2Mode(%game, %admin, %missionDisplayName, %typeDisp
 		 $VoteSoundInProgress = false;
       }
       else 
+		 $VoteSoundInProgress = false;
          messageAll('MsgVoteFailed', '\c2Free For All mode vote did not pass: %1 percent.', mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100)); 
    }
 }
@@ -1413,6 +1462,7 @@ function DefaultGame::voteChangeTimeLimit(%game, %admin, %newLimit)
       $VoteInProgress = false;
 	  $TimeLimitChanged = true;
 	  $VoteSoundInProgress = false;
+	  $VoteInProgressMessege = false;
 	  messageAll('MsgAdminForce', '\c2The Admin changed the mission time limit to %1 minutes.', %display);
       $Host::TimeLimit = %newLimit;
       %cause = "(admin)";
@@ -1428,12 +1478,13 @@ function DefaultGame::voteChangeTimeLimit(%game, %admin, %newLimit)
 	  // Changed it back. Choco
       if(%totalVotes > 0 && (%game.totalVotesFor / (ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone)) > ($Host::VotePasspercent / 100))
       {
-         messageAll('MsgVotePassed', '\c2The mission time limit was set to %1 minutes by vote.', %display);   
-		 $Host::TimeLimit = %newLimit;
-         %cause = "(vote)";
-		 $VoteInProgress = false;
+         $VoteInProgress = false;
 		 $TimeLimitChanged = true;
 		 $VoteSoundInProgress = false;
+		 $VoteInProgressMessege = false;
+		 messageAll('MsgVotePassed', '\c2The mission time limit was set to %1 minutes by vote.', %display);   
+		 $Host::TimeLimit = %newLimit;
+         %cause = "(vote)";
 
          // reset the voted time limit when changing mission
          if($Host::EvoDefaultTimeLimit)

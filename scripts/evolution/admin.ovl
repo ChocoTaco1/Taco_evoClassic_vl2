@@ -73,8 +73,6 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 					}
                }
                playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting, true);
-			   $VoteSoundInProgress = true;
-			   schedule(10000, 0, "VoteSound", %game);
             }
             else
             {

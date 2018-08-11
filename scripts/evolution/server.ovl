@@ -52,6 +52,72 @@ function CycleMissions()
       Parent::CycleMissions();
 } 
 
+// we pass the guid as well, in case this guy leaves the server.
+function kick( %client, %admin, %guid )
+{
+   if(%admin)
+      messageAll( 'MsgAdminForce', '\c2%1 has kicked %2.', %admin.name, %client.name ); // z0dd - ZOD, 7/13/03. Tell who kicked
+   else
+      messageAll( 'MsgVotePassed', '\c2%1 was kicked by vote.', Game.kickClientName );
+   
+   messageClient(%client, 'onClientKicked', "");
+   messageAllExcept( %client, -1, 'MsgClientDrop', "", Game.kickClientName, %client );
+
+   if( %client.isAIControlled() )
+   {
+      if($Host::ClassicCanKickBots || %admin.isAdmin)
+      {
+         if(!$Host::ClassicBalancedBots)
+         {
+            $HostGameBotCount--;
+            %client.drop();
+         }
+      }
+   }
+   else
+   {
+      if( $playingOnline ) // won games
+      {
+         %count = ClientGroup.getCount();
+         %found = false;
+         for( %i = 0; %i < %count; %i++ ) // see if this guy is still here...
+         {
+            %cl = ClientGroup.getObject( %i );
+	      if( %cl.guid == %guid )
+            {
+	         %found = true; 
+
+	         // kill and delete this client, their done in this server.
+	         if( isObject( %cl.player ) )
+	            %cl.player.scriptKill(0);
+            
+               if ( isObject( %cl ) )
+               {
+                  %cl.setDisconnectReason( "You have been kicked out of the game." ); // z0dd - ZOD, 7/13/03. Tell who kicked
+	            %cl.schedule(700, "delete");
+               }
+	         BanList::add( %guid, "0", $Host::KickBanTime );
+            }   
+	   }
+         if( !%found )
+	      BanList::add( %guid, "0", $Host::KickBanTime ); // keep this guy out for a while since he left. 
+      }
+      else // lan games
+      {
+	   // kill and delete this client
+	   if( isObject( %client.player ) )
+	      %client.player.scriptKill(0);
+      
+         if ( isObject( %client ) )
+         {
+            %client.setDisconnectReason( "You have been kicked out of the game." );
+	         %client.schedule(700, "delete");
+         }
+	   BanList::add( 0, %client.getAddress(), $Host::KickBanTime );
+      }
+   }
+}
+
 // onConnect(%client, %name, %raceGender, %skin, %voice, %voicePitch)
 // Info: Check for: auto-pw, full server pw, no base rape and some other things
 function GameConnection::onConnect(%client, %name, %raceGender, %skin, %voice, %voicePitch)
