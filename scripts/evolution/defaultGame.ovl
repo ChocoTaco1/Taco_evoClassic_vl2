@@ -37,8 +37,11 @@ function DefaultGame::gameOver(%game)
       $ETMCMapUpdated = "";
    }
    
+    //Reset NoBaseRape Notify
+	ResetNotify::MissionEnd( %game, %client );
 	//Reset Everything to do with Vote Overtime
 	ResetVOall(%game);
+	
 }
 
 // CHANGE TEAM NAMES
