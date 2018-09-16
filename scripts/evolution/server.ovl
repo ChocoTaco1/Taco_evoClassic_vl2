@@ -210,6 +210,10 @@ function GameConnection::onConnect(%client, %name, %raceGender, %skin, %voice, %
          //$EvoNoBaseRape = 0;
       //}
    //}
+   
+   //Reset GetCounts
+   ResetClientChangedTeams();
+   
 }
 
 // onDrop(%client, %reason)
