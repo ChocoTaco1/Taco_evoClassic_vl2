@@ -418,14 +418,14 @@ if($Host::EvoStats)
    %game.AIflagCap(%player, %flag);
 
    //if this cap didn't end the game, play the announcer...
-   //if($missionRunning)
-   //{
-   	// classic uses only storm/inferno
-      //if(%game.getTeamName(%client.team) $= 'Inferno' || ($Evo::ETMMode && (%otherTeam $= $ETMmode::Team[$ETMCMap, 2])))
-         //messageAll("", '~wfx/misc/flag_capture.wav');
-      //else if(%game.getTeamName(%client.team) $= 'Storm' || ($Evo::ETMMode && (%otherTeam $= $ETMmode::Team[$ETMCMap, 1])))
-         //messageAll("", '~wfx/misc/flag_capture.wav');
-   //}
+   if($missionRunning)
+   {
+   	 //classic uses only storm/inferno
+      if(%game.getTeamName(%client.team) $= 'Inferno' || ($Evo::ETMMode && (%otherTeam $= $ETMmode::Team[$ETMCMap, 2])))
+         messageAll("", '~wvoice/announcer/ann.infscores.wav');
+      else if(%game.getTeamName(%client.team) $= 'Storm' || ($Evo::ETMMode && (%otherTeam $= $ETMmode::Team[$ETMCMap, 1])))
+         messageAll("", '~wvoice/announcer/ann.stoscores.wav');
+   }
    
    //ResetNotify
    ResetUnbalancedNotifyPerCap();
