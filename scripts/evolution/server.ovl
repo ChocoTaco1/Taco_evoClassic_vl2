@@ -1173,6 +1173,7 @@ function resetServerDefaults()
    $EvoDefaultTimeLimit = $Host::TimeLimit;
    $EvoNoBaseRape = 1;
    $SaveCustomMapRotation = $Host::EvoCustomMapRotation;
+   $Host::TournamentMode = 0;
 
    // ---------------------------------------------------
    // z0dd - ZOD, 9/29/02. Removed T2 demo code from here

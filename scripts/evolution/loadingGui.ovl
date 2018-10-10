@@ -17,7 +17,7 @@ function sendModInfoToClient(%client)
       %stats = "<color:ffb734>Stats based on: <color:29DEE7>" @ ($Host::EvoStatsType == 1 ? "Kills" : "Damage");
 
    if($Host::EvoNoBaseRapeEnabled)
-   	%rapeppl = "<color:ffb734>No Base Rape Min players: <color:29DEE7>" @ $Host::EvoNoBaseRapeClassicPlayerCount;
+   	%rapeppl = "<color:ffb734>Min No Base Rape: <color:29DEE7>" @ $Host::EvoNoBaseRapeClassicPlayerCount;
 
    if($Evo::ETMMode && $ETMmode::CurrentMap <= $ETMmode::Counter)
    {
@@ -34,27 +34,34 @@ function sendModInfoToClient(%client)
 
 
 	// classic doesn't use a variable to print the version, it needs to be edited manually
-   %modName = "Classic " @ $classicVersion @ " running Classic Evolution Admin Mod " @ $EvoVersion;
-   %ModLine[0] = "<spush><font:Arial:14><a:www.tacostand.tk><color:008ffb>http://www.tacostand.tk</a><spop>\n<color:ffb734>Classic Developers: <color:29DEE7><a:PLAYER\tz0dd>z0dd</a> and <a:PLAYER\t-ZOD->ZOD</a>";
+   %modName = "";
+   //%ModLine[0] = "<color:ffb734>Classic Developers: <color:29DEE7><a:PLAYER\tz0dd>z0dd</a> and <a:PLAYER\t-ZOD->ZOD</a>";
+   %ModLine[0] = "<spush><font:sui generis:22><color:29DEE7><just:center>CLASSIC<spop>";
+   %ModLine[1] = "";
+   %ModLine[1] = "<spush><font:verdana bold:16><color:33CCCC>Version: <color:29DEE7>" @ $classicVersion @ "<spop>";
+   %ModLine[3] = "";
+   %ModLine[4] = "<spush><font:verdana bold:16><color:33CCCC>Developers: <color:29DEE7><a:PLAYER\tz0dd>z0dd</a> <color:33CCCC>and <color:29DEE7><a:PLAYER\t-ZOD->ZOD</a><spop>";
+   %ModLine[5] = "<just:left><font:univers:18>";
+   
+   %ModCnt = 6;
 
-   %ModCnt = 1;
-
-   %SpecialCnt = 5;
+   %SpecialCnt = 4;
    %SpecialTextLine[0] = %random;
    %SpecialTextLine[1] = %fair;
    %SpecialTextLine[2] = %net;
    %SpecialTextLine[3] = %stats;
-   %SpecialTextLine[4] = %nmis;
+   //%SpecialTextLine[4] = %nmis;
 
-   %ServerCnt = 8;
+   %ServerCnt = 7;
    %ServerTextLine[0] = %time;
    %ServerTextLine[1] = %max;
    %ServerTextLine[2] = %td;
-   %serverTextLine[3] = %crc;
-   %ServerTextLine[4] = %pure;
-   %ServerTextLine[5] = %smurf;
-   %ServerTextLine[6] = %rape;
-   %ServerTextLine[7] = %rapeppl;
+   //%serverTextLine[3] = %crc;
+   //%ServerTextLine[4] = %pure;
+   %ServerTextLine[3] = %smurf;
+   %ServerTextLine[4] = %rape;
+   %ServerTextLine[5] = %rapeppl;
+   %ServerTextLine[6] = %nmis;
 
    %singlePlayer = $CurrentMissionType $= "SinglePlayer";
    messageClient(%client, 'MsgLoadInfo', "", $CurrentMission, %modName, $Host::GameName);
