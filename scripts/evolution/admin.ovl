@@ -167,6 +167,34 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 			schedule(10000, 0, "VoteSound", %game);
          }
 
+	  case "VoteSkipMission":
+         if(%isAdmin && !%client.ForceVote )
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+            adminLog(%client, " skipped the mission to " @ %arg1 @ " (" @ %arg2 @ ")");
+         }
+         else if($Host::TournamentMode || (!$Host::TournamentMode && $Host::EvoAllowPlayerVoteChangeMission))
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 \c1%3', %client.name, "skip to the next mission:", $EvoCachedNextMission);
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+			$VoteSoundInProgress = true;
+			schedule(10000, 0, "VoteSound", %game);
+         }
+
       case "VoteFFAMode":
          if(%isAdmin)
          {

@@ -64,7 +64,8 @@ function sendModInfoToClient(%client)
    %ServerTextLine[6] = %nmis;
 
    %singlePlayer = $CurrentMissionType $= "SinglePlayer";
-   messageClient(%client, 'MsgLoadInfo', "", $CurrentMission, %modName, $Host::GameName);
+   //messageClient(%client, 'MsgLoadInfo', "", $CurrentMission, %modName, $Host::GameName);
+   messageClient(%client, 'MsgLoadInfo', "", $CurrentMission);
 
    // Send mod details (non bulleted list, small text):
    for(%line = 0; %line < %ModCnt; %line++)

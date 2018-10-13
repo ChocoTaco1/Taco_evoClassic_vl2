@@ -926,9 +926,6 @@ function DefaultGame::evalVote(%game, %typeName, %admin, %arg1, %arg2, %arg3, %a
 
       case "stopRunningVote":
          %game.stopRunningVote(%admin, %arg1, %arg2, %arg3, %arg4);
-      
-      case "voteSkipMission":
-         %game.voteSkipMission(%admin, %arg1, %arg2, %arg3, %arg4);
 
       case "switchCRCCheck":
         %game.switchCRCCheck(%admin, %arg1, %arg2, %arg3, %arg4);
@@ -938,6 +935,9 @@ function DefaultGame::evalVote(%game, %typeName, %admin, %arg1, %arg2, %arg3, %a
 
       case "clearServerForMatch":
          %game.clearServerForMatch(%admin, %arg1, %arg2, %arg3, %arg4);
+		 
+	  case "voteSkipMission":
+         %game.voteSkipMission(%admin, %arg1, %arg2, %arg3, %arg4);
 
       default:
          Parent::evalVote(%game, %typeName, %admin, %arg1, %arg2, %arg3, %arg4);
@@ -1026,6 +1026,10 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
          {
             PizzaTriconPopup( %client, %key, 'Make Super Admin', "SuperAdminPlayer", 19 );
          }
+		 //Added choco
+		 if(!%isTargetSelf && (%client.team == %targetClient.team || %targetClient.team == 0))
+         messageClient(%client, 'MsgPlayerPopupItem', "", %key, "KickPlayer", "", 'Vote to Kick', 3);
+	 
          messageClient(%client, 'MsgPlayerPopupItem', "", %key, "KickPlayer", "", 'Kick', 3);
 
          if(!%isTargetBot)
@@ -1103,6 +1107,7 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
       if (%client.ForceVote > 0)
       {
          messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeMission', 'change the mission to', 'Vote to Change the Mission');
+		 messageClient(%client, 'MsgVoteItem', "", %key, 'VoteSkipMission', 'skip the mission to', 'Vote to Skip Mission' );
          messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeTimeLimit', 'change the time limit', 'Vote to Change the Time Limit');
          messageClient(%client, 'MsgVoteItem',"", %key, 'ForceVote', 'Cancel Force Vote', "Cancel 'Vote To...'");
          return; // Display no further vote options
@@ -1146,6 +1151,9 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteTournamentMode', 'Change server to Tournament.', 'Vote Tournament Mode');
             if($Host::EvoAllowPlayerVoteTimeLimit)
                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeTimeLimit', 'change the time limit', 'Vote to Change the Time Limit');
+			   
+		    messageClient(%client, 'MsgVoteItem', "", %key, 'VoteSkipMission', 'skip the mission to', 'Vote to Skip Mission' );
+
 
             if(%multipleTeams && $Host::EvoAllowPlayerVoteTeamDamage)
             {
@@ -1186,6 +1194,7 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
          {
             messageClient(%client, 'MsgVoteItem', "", %key, 'VoteTournamentMode', 'Change server to Tournament.', 'Tournament Mode');
             messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeMission', 'change the mission to', 'Change the Mission');
+			messageClient(%client, 'MsgVoteItem', "", %key, 'VoteSkipMission', 'skip the mission to', 'Skip the Mission' );
             messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeTimeLimit', 'change the time limit', 'Change the Time Limit');
 
             if ( $Host::EvoForcedVotes )
@@ -1268,10 +1277,10 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
    // Admin only options:
    if ( %client.isAdmin )
    {
-      if ( $LimitArmors )
-         messageClient( %client, 'MsgVoteItem', "", %key, 'VoteArmorLimits', 'disable armor limiting', 'Disable armor limits' );
-      else
-         messageClient( %client, 'MsgVoteItem', "", %key, 'VoteArmorLimits', 'enable armor limiting', 'Enable armor limits' );
+      //if ( $LimitArmors )
+         //messageClient( %client, 'MsgVoteItem', "", %key, 'VoteArmorLimits', 'disable armor limiting', 'Disable armor limits' );
+      //else
+         //messageClient( %client, 'MsgVoteItem', "", %key, 'VoteArmorLimits', 'enable armor limiting', 'Enable armor limits' );
 
       // -----------------------------------------------------------------------------
       // z0dd - ZOD, 5/12/02. Add bot menu for admins
@@ -1567,20 +1576,33 @@ function DefaultGame::stopRunningVote(%game, %admin, %arg1, %arg2, %arg3, %arg4)
    }
 }
 
-function DefaultGame::voteSkipMission(%game, %admin, %missionName, %missionType, %arg3, %arg4)
+function DefaultGame::voteSkipMission(%game, %admin, %arg1, %arg2, %arg3, %arg4)
 {
-   %realTotalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
-   %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst + %game.totalVotesNone;
-   if(%realTotalVotes > 0 && (%game.totalVotesFor / %totalVotes) > ($Host::VotePasspercent / 100))
+   if(%admin) 
    {
-	  ResetVOall(%game);
-	  messageAll('MsgVotePassed', '\c2The mission was skipped to %1 by vote.', %missionName); 
+      messageAll('MsgAdminForce', '\c2The Admin %1 has skipped to the next mission.',$AdminCl.name );
+      echo($AdminCl.nameBase @ ": mission skipped (admin)");
       %game.gameOver();
-      loadMission(%missionName, %missionType, false);   
+      //loadMission( findNextCycleMission(), $CurrentMissionType, false );
+      cycleMissions();
    }
-   else {
-	  ResetVOall(%game);
-      messageAll('MsgVoteFailed', '\c2Skip mission vote did not pass: %1 percent.', mFloor(%game.totalVotesFor/%totalVotes * 100));
+   else
+   {
+      %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
+      // Added people who dont vote into the equation, now if you do not vote, it doesn't count as a no. - z0dd - ZOD
+      if(%totalVotes > 0 && (%game.totalVotesFor / (ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone)) > ($Host::VotePasspercent / 100))
+      {
+         messageAll('MsgVotePassed', '\c2The mission was skipped to next by vote.'); 
+         echo("mission skipped (vote)");
+         %game.gameOver();
+         //loadMission( findNextCycleMission(), $CurrentMissionType, false );
+         cycleMissions();   
+      }
+      else
+	  {
+		 ResetVOall(%game);
+         messageAll('MsgVoteFailed', '\c2Skip mission vote did not pass: %1 percent.', mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100));
+	  }
    }
 }
 
