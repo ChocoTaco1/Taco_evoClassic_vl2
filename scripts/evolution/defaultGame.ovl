@@ -1026,9 +1026,6 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
          {
             PizzaTriconPopup( %client, %key, 'Make Super Admin', "SuperAdminPlayer", 19 );
          }
-		 //Added choco
-		 if(!%isTargetSelf && (%client.team == %targetClient.team || %targetClient.team == 0))
-         messageClient(%client, 'MsgPlayerPopupItem', "", %key, "KickPlayer", "", 'Vote to Kick', 3);
 	 
          messageClient(%client, 'MsgPlayerPopupItem', "", %key, "KickPlayer", "", 'Kick', 3);
 
