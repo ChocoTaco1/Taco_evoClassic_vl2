@@ -12,6 +12,10 @@ function sendModInfoToClient(%client)
    %fair = "<color:ffb734>Fair teams: <color:29DEE7>" @ ($Host::ClassicFairTeams ? "On" : "Off");
    %rape = "<color:ffb734>No Base Rape: <color:29DEE7>" @ ($Host::EvoNoBaseRapeEnabled ? "On" : "Off");
    %net = "<color:ffb734>Packets Rate / Size: <color:29DEE7>" @ $pref::Net::PacketRateToClient @ " / " @ $pref::Net::PacketSize;
+   %discord = "<color:ffb734>Join Discord: <color:29DEE7>https://t2discord.tk";
+   %git = "<color:ffb734>Server Github: <color:29DEE7>https://github.com/ChocoTaco1/TacoServer";
+   %loc = "<color:ffb734>Hosted by: <color:29DEE7>Branzone";
+
 
    if($Host::EvoStats && (!$Host::TournamentMode || ($Host::TournamentMode && $Host::EvoStatsTourney)) && $Host::EvoStatsType != 0)
       %stats = "<color:ffb734>Stats based on: <color:29DEE7>" @ ($Host::EvoStatsType == 1 ? "Kills" : "Damage");
@@ -46,10 +50,10 @@ function sendModInfoToClient(%client)
    %ModCnt = 6;
 
    %SpecialCnt = 4;
-   %SpecialTextLine[0] = %random;
-   %SpecialTextLine[1] = %fair;
+   %SpecialTextLine[0] = %discord;
+   %SpecialTextLine[1] = %git;
    %SpecialTextLine[2] = %net;
-   %SpecialTextLine[3] = %stats;
+   %SpecialTextLine[3] = %loc;
    //%SpecialTextLine[4] = %nmis;
 
    %ServerCnt = 7;
@@ -61,6 +65,7 @@ function sendModInfoToClient(%client)
    %ServerTextLine[3] = %smurf;
    %ServerTextLine[4] = %rape;
    %ServerTextLine[5] = %rapeppl;
+   %ServerTextLine[4] = %stats;
    %ServerTextLine[6] = %nmis;
 
    %singlePlayer = $CurrentMissionType $= "SinglePlayer";
