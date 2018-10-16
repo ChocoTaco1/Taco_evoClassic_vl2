@@ -520,3 +520,14 @@ $Host::DefenseTurret::RequiredInTourney = 1;
 // style spam or not. Setting the max height to something like 1000 metres will give
 // you all the spam you want.
 $Host::DefenseTurret::MaxWptHeight = 10;
+
+// ***********************
+// *       EXTRAS        *
+// ***********************
+
+//Server Host
+$Host::HostedBy = "Branzone";
+//Server Github
+$Host::Github = "https://github.com/Server";
+//Server Discord
+$Host::Discord = "https://www.discordapp.com/";
