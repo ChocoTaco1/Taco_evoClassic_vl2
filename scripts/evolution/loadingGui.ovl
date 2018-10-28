@@ -56,17 +56,18 @@ function sendModInfoToClient(%client)
    %SpecialTextLine[3] = %host;
    //%SpecialTextLine[4] = %nmis;
 
-   %ServerCnt = 7;
+   %ServerCnt = 8;
    %ServerTextLine[0] = %time;
    %ServerTextLine[1] = %max;
    %ServerTextLine[2] = %td;
-   //%serverTextLine[3] = %crc;
-   //%ServerTextLine[4] = %pure;
    %ServerTextLine[3] = %smurf;
    %ServerTextLine[4] = %rape;
    %ServerTextLine[5] = %rapeppl;
-   %ServerTextLine[4] = %stats;
-   %ServerTextLine[6] = %nmis;
+   %ServerTextLine[6] = %stats;
+   %ServerTextLine[7] = %nmis;
+   
+      //%serverTextLine[3] = %crc;
+   //%ServerTextLine[4] = %pure;
 
    %singlePlayer = $CurrentMissionType $= "SinglePlayer";
    //messageClient(%client, 'MsgLoadInfo', "", $CurrentMission, %modName, $Host::GameName);
