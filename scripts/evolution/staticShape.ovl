@@ -10,11 +10,8 @@ function StaticShapeData::damageObject(%data, %targetObject, %sourceObject, %pos
     //  if(%targetObject.getDataBlock().getClassName() !$= "TurretData" && !%targetObject.getDataBlock().deployedObject)
 		%targetname = %targetObject.getDataBlock().getName();            
 	
-			if(%targetname $= "GeneratorLarge" || %targetname $= "StationInventory") {
-			PlayerNotifyEnabled::OnDamage( %game, %sourceObject );
-			return;
-			}
-			if(%targetname $= "SolarPanel" && $stalemate $= false) {
+			if( %targetname $= "GeneratorLarge" || %targetname $= "StationInventory" || %targetname $= "SolarPanel" ) 
+			{
 			PlayerNotifyEnabled::OnDamage( %game, %sourceObject );
 			return;
 			}	

@@ -435,7 +435,6 @@ if($Host::EvoStats)
 function CTFGame::beginStalemate(%game)
 {
    %game.stalemate = true;
-   $stalemate = true;
    %game.showStalemateTargets();
 
    // z0dd - ZOD, 5/27/03. Added anti-turtling, return flags after x minutes
@@ -451,7 +450,6 @@ function CTFGame::beginStalemate(%game)
 function CTFGame::endStalemate(%game)
 {
    %game.stalemate = false;
-   $stalemate = false;
    %game.hideStalemateTargets();
    cancel(%game.stalemateSchedule);
    cancel(%game.turtleSchedule);
