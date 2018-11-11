@@ -427,7 +427,9 @@ if($Host::EvoStats)
          messageAll("", '~wvoice/announcer/ann.stoscores.wav');
    }
    
-   //ResetNotify
+   //Let GetCounts run
+   ResetClientChangedTeams();
+   //ResetTeamBalanceNotify
    ResetUnbalancedNotifyPerCap();
    
 }
