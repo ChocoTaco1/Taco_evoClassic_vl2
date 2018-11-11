@@ -12,7 +12,7 @@ function StaticShapeData::damageObject(%data, %targetObject, %sourceObject, %pos
 	
 			if( %targetname $= "GeneratorLarge" || %targetname $= "StationInventory" || %targetname $= "SolarPanel" ) 
 			{
-			PlayerNotifyEnabled::OnDamage( %game, %sourceObject );
+			NBRAssetSound( %game, %sourceObject );
 			return;
 			}	
 			

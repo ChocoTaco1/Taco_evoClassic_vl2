@@ -38,7 +38,7 @@ function DefaultGame::gameOver(%game)
    }
    
     //Reset NoBaseRape Notify
-	ResetNotify::MissionEnd( %game, %client );
+	ResetNBRNotify();
 	//Reset TeamBalance Notify
 	ResetTeamBalanceNotifyGameOver( %game );
 	//Reset Everything to do with Vote Overtime
@@ -1159,13 +1159,13 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
                else
                   messageClient(%client, 'MsgVoteItem', "", %key, 'VoteTeamDamage', 'enable team damage', 'Vote to Enable Team Damage');
             }
-            if($CurrentMissionType !$= TR2) // z0dd - ZOD, 5/23/03. Added vote for Random teams
-            {
-               if ( $RandomTeams )
-                  messageClient( %client, 'MsgVoteItem', "", %key, 'VoteRandomTeams', 'disable random teams', 'Vote to Disable Random Teams' );
-               else
-                  messageClient( %client, 'MsgVoteItem', "", %key, 'VoteRandomTeams', 'enable random teams', 'Vote to Enable Random Teams' );
-            }
+            //if($CurrentMissionType !$= TR2) // z0dd - ZOD, 5/23/03. Added vote for Random teams
+            //{
+               //if ( $RandomTeams )
+                  //messageClient( %client, 'MsgVoteItem', "", %key, 'VoteRandomTeams', 'disable random teams', 'Vote to Disable Random Teams' );
+               //else
+                  //messageClient( %client, 'MsgVoteItem', "", %key, 'VoteRandomTeams', 'enable random teams', 'Vote to Enable Random Teams' );
+            //}
          }
          else
          {
@@ -1215,13 +1215,13 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
             else
                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteTeamDamage', 'enable team damage', 'Enable Team Damage');
 
-            if($CurrentMissionType !$= TR2) // z0dd - ZOD, 5/23/03. Added vote for Random teams
-            {
-               if ( $RandomTeams )
-                  messageClient( %client, 'MsgVoteItem', "", %key, 'VoteRandomTeams', 'disable random teams', 'Disable Random Teams' );
-               else
-                  messageClient( %client, 'MsgVoteItem', "", %key, 'VoteRandomTeams', 'enable random teams', 'Enable Random Teams' );
-            }
+            //if($CurrentMissionType !$= TR2) // z0dd - ZOD, 5/23/03. Added vote for Random teams
+            //{
+               //if ( $RandomTeams )
+                  //messageClient( %client, 'MsgVoteItem', "", %key, 'VoteRandomTeams', 'disable random teams', 'Disable Random Teams' );
+               //else
+                  //messageClient( %client, 'MsgVoteItem', "", %key, 'VoteRandomTeams', 'enable random teams', 'Enable Random Teams' );
+            //}
          }
       }
 
