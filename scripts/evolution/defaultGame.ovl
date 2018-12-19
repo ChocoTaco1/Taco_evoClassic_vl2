@@ -1380,6 +1380,7 @@ function DefaultGame::voteChangeMission(%game, %admin, %missionDisplayName, %typ
    {
       %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
       // Added people who dont vote into the equation, now if you do not vote, it doesn't count as a no. - ZOD
+	  // Changed it back. Choco
       if(%totalVotes > 0 && (%game.totalVotesFor / (ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone)) > ($Host::VotePasspercent / 100))
       {
          messageAll('MsgVotePassed', '\c2The mission was changed to %1 (%2) by vote.', %missionDisplayName, %typeDisplayName); 
@@ -1448,6 +1449,7 @@ function DefaultGame::voteFFAMode( %game, %admin, %client )
    {
       %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
       // Added people who dont vote into the equation, now if you do not vote, it doesn't count as a no. - ZOD
+	  // Changed it back. Choco
       if(%totalVotes > 0 && (%game.totalVotesFor / (ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone)) > ($Host::VotePasspercent / 100))
       {
          messageAll('MsgVotePassed', '\c2Server switched to Free For All mode by vote.', %client);
@@ -1587,6 +1589,7 @@ function DefaultGame::voteSkipMission(%game, %admin, %arg1, %arg2, %arg3, %arg4)
    {
       %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
       // Added people who dont vote into the equation, now if you do not vote, it doesn't count as a no. - z0dd - ZOD
+	  // Changed it back. Choco
       if(%totalVotes > 0 && (%game.totalVotesFor / (ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone)) > ($Host::VotePasspercent / 100))
       {
          messageAll('MsgVotePassed', '\c2The mission was skipped to next by vote.'); 

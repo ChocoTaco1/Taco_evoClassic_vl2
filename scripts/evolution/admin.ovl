@@ -516,9 +516,10 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
       // sonic9k 11/6/2003 - Added support for LakRabbit DuelMode option
       //
       case "VoteDuelMode":
-         if(%isAdmin)
+         if( %isAdmin && !%client.ForceVote )
          {
             adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+			adminLog(%client, " has toggled " @ %arg1 @ " (" @ %arg2 @ ")");
          }
          else
          {
@@ -527,12 +528,13 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
                return;
             }
+			%actionMsg = ($Host::LakRabbitDuelMode ? "disable Duel mode" : "enable Duel mode");
             for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
             {
                %cl = ClientGroup.getObject(%idx);
                if(!%cl.isAIControlled())
                {
-                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 Duel Mode.', %client.name, (Game.duelMode) ? "disable" : "enable");
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, %actionMsg);
                   %clientsVoting++;
                }
             }
@@ -542,9 +544,10 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
       // sonic9k 11/6/2003 - Added support for LakRabbit SplashDamage option
       //
       case "VoteSplashDamage":
-         if(%isAdmin)
+         if( %isAdmin && !%client.ForceVote )
          {
             adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+			adminLog(%client, " has toggled " @ %arg1 @ " (" @ %arg2 @ ")");
          }
          else
          {
@@ -553,12 +556,13 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
                return;
             }
+			%actionMsg = ($Host::LakRabbitNoSplashDamage ? "enable SplashDamage" : "disable SplashDamage");
             for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
             {
                %cl = ClientGroup.getObject(%idx);
                if(!%cl.isAIControlled())
                {
-                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 Splash Damage.', %client.name, (Game.SplashDamage) ? "disable" : "enable");
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, %actionMsg);
                   %clientsVoting++;
                }
             }
@@ -568,9 +572,10 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
       // chocotaco 8/7/2018 - Added support for LakRabbit Pro option
       //
       case "VotePro":
-         if(%isAdmin)
+         if( %isAdmin && !%client.ForceVote )
          {
             adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+			adminLog(%client, " has toggled " @ %arg1 @ " (" @ %arg2 @ ")");
          }
          else
          {
@@ -579,12 +584,13 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
                return;
             }
+			%actionMsg = ($Host::LakRabbitPubPro ? "disable Pro mode" : "enable Pro mode");
             for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
             {
                %cl = ClientGroup.getObject(%idx);
                if(!%cl.isAIControlled())
                {
-                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 Pro Mode.', %client.name, (Game.VotePro) ? "disable" : "enable");
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, %actionMsg);
                   %clientsVoting++;
                }
             }
