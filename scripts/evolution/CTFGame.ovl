@@ -427,11 +427,6 @@ if($Host::EvoStats)
          messageAll("", '~wvoice/announcer/ann.stoscores.wav');
    }
    
-   //Let GetCounts run
-   ResetClientChangedTeams();
-   //ResetTeamBalanceNotify
-   ResetUnbalancedNotifyPerCap();
-   
 }
 
 function CTFGame::beginStalemate(%game)
