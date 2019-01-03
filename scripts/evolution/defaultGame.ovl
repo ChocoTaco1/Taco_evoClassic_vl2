@@ -938,9 +938,6 @@ function DefaultGame::evalVote(%game, %typeName, %admin, %arg1, %arg2, %arg3, %a
 		 
 	  case "voteSkipMission":
          %game.voteSkipMission(%admin, %arg1, %arg2, %arg3, %arg4);
-		 
-	  case "VoteChaingun":
-		%game.VoteChaingun(%admin, %arg1, %arg2, %arg3, %arg4);
 
       default:
          Parent::evalVote(%game, %typeName, %admin, %arg1, %arg2, %arg3, %arg4);
@@ -1085,6 +1082,8 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
    }
 }
 
+// sendGameVoteMenu( %game, %client, %key )
+// Info: totally re-wrote
 function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 {
    // Sinbinned players cannot take actions
@@ -1108,16 +1107,6 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 		 messageClient(%client, 'MsgVoteItem', "", %key, 'VoteSkipMission', 'skip the mission to', 'Vote to Skip Mission' );
          messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeTimeLimit', 'change the time limit', 'Vote to Change the Time Limit');
          messageClient(%client, 'MsgVoteItem',"", %key, 'ForceVote', 'Cancel Force Vote', "Cancel 'Vote To...'");
-		 
-		 //Vote Chaingun
-		 if($CurrentMissionType !$= "LakRabbit" )
-		 {
-			if(!$Host::EnableChaingun)
-				messageClient( %client, 'MsgVoteItem', "", %key, 'VoteChaingun', 'Enable Chaingun.', 'Vote to enable Chaingun' );
-			else
-				messageClient( %client, 'MsgVoteItem', "", %key, 'VoteChaingun', 'Disable Chaingun.', 'Vote to disable Chaingun' );
-		 }
-		
          return; // Display no further vote options
       }
    }
@@ -1195,16 +1184,6 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
                   messageClient(%client, 'MsgVoteItem', "", %key, 'VoteTeamDamage', 'enable team damage', 'Vote to Enable Team Damage');
             }
          }
-		 
-		 //Vote Chaingun
-		 if($CurrentMissionType !$= "LakRabbit" )
-		 {
-			if(!$Host::EnableChaingun)
-				messageClient( %client, 'MsgVoteItem', "", %key, 'VoteChaingun', 'Enable Chaingun.', 'Vote to enable Chaingun' );
-			else
-				messageClient( %client, 'MsgVoteItem', "", %key, 'VoteChaingun', 'Disable Chaingun.', 'Vote to disable Chaingun' );
-		 }
-		 
       }
       else
       {
@@ -1244,16 +1223,6 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
                   //messageClient( %client, 'MsgVoteItem', "", %key, 'VoteRandomTeams', 'enable random teams', 'Enable Random Teams' );
             //}
          }
-		 
-		 //Vote Chaingun
-		 if($CurrentMissionType !$= "LakRabbit" )
-		 {
-			if(!$Host::EnableChaingun)
-				messageClient( %client, 'MsgVoteItem', "", %key, 'VoteChaingun', 'Enable Chaingun.', 'Enable Chaingun' );
-			else
-				messageClient( %client, 'MsgVoteItem', "", %key, 'VoteChaingun', 'Disable Chaingun.', 'Disable Chaingun' );
-		 }
-		 
       }
 
       if ($Host::EvoServerRules[1] !$= "" )
