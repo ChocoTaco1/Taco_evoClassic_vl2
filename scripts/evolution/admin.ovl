@@ -596,6 +596,36 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
          }
+	  //
+      // chocotaco 1/2/2019 - Added support for enable/disable chaingun
+      //
+      case "VoteChaingun":
+         if( %isAdmin && !%client.ForceVote )
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+			adminLog(%client, " has toggled " @ %arg1 @ " (" @ %arg2 @ ")");
+         }
+         else
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+			%actionMsg = ($Host::EnableChaingun ? "disable chaingun" : "enable chaingun");
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, %actionMsg);
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+			$VoteSoundInProgress = true;
+			schedule(10000, 0, "VoteSound", %game);
+         }
       //---------------------------- CLASSIC MOD
       case "VoteArmorLimits":
          if(%isAdmin)
