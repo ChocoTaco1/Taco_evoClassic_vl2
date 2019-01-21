@@ -512,6 +512,14 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
             %client.cantView = true;
             %client.schedViewRules = schedule( 10000, %client, "resetViewSchedule", %client );
          }
+	  case "showNextMission":
+         if ( !%client.CantView )
+		 {
+            messageClient(%client, 'showNextMission', '\c2The next mission is: %1', $EvoCachedNextMission );
+
+            %client.cantView = true;
+            %client.schedViewRules = schedule( 10000, %client, "resetViewSchedule", %client );
+		 } 
       //
       // sonic9k 11/6/2003 - Added support for LakRabbit DuelMode option
       //
@@ -585,6 +593,31 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                return;
             }
 			%actionMsg = ($Host::LakRabbitPubPro ? "disable Pro mode" : "enable Pro mode");
+            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            {
+               %cl = ClientGroup.getObject(%idx);
+               if(!%cl.isAIControlled())
+               {
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2.', %client.name, %actionMsg);
+                  %clientsVoting++;
+               }
+            }
+            playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+         }
+	  case "VoteSCtFProMode":
+         if( %isAdmin && !%client.ForceVote )
+         {
+            adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
+			adminLog(%client, " has toggled " @ %arg1 @ " (" @ %arg2 @ ")");
+         }
+         else
+         {
+            if(Game.scheduleVote !$= "")
+            {
+               messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
+               return;
+            }
+			%actionMsg = ($Host::VoteSCtFProMode ? "disable Pro mode" : "enable Pro mode");
             for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
             {
                %cl = ClientGroup.getObject(%idx);

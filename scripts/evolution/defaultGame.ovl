@@ -1152,13 +1152,13 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 		    messageClient(%client, 'MsgVoteItem', "", %key, 'VoteSkipMission', 'skip the mission to', 'Vote to Skip Mission' );
 
 
-            if(%multipleTeams && $Host::EvoAllowPlayerVoteTeamDamage)
-            {
-               if($teamDamage)
-                  messageClient(%client, 'MsgVoteItem', "", %key, 'VoteTeamDamage', 'disable team damage', 'Vote to Disable Team Damage');
-               else
-                  messageClient(%client, 'MsgVoteItem', "", %key, 'VoteTeamDamage', 'enable team damage', 'Vote to Enable Team Damage');
-            }
+            //if(%multipleTeams && $Host::EvoAllowPlayerVoteTeamDamage)
+            //{
+               //if($teamDamage)
+                  //messageClient(%client, 'MsgVoteItem', "", %key, 'VoteTeamDamage', 'disable team damage', 'Vote to Disable Team Damage');
+               //else
+                  //messageClient(%client, 'MsgVoteItem', "", %key, 'VoteTeamDamage', 'enable team damage', 'Vote to Enable Team Damage');
+            //}
             //if($CurrentMissionType !$= TR2) // z0dd - ZOD, 5/23/03. Added vote for Random teams
             //{
                //if ( $RandomTeams )
@@ -1230,6 +1230,8 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 	  messageClient( %client, 'MsgVoteItem', "", %key, 'showServerRules', 'show server rules', "Show Server Rules" );
 	}
 
+	messageClient( %client, 'MsgVoteItem', "", %key, 'showNextMission', 'show next mission', "Show Next Mission" );
+
       if((%client.isSuperAdmin && $Host::EvoSuperAdminReset) || (%client.isAdmin && $Host::EvoAdminReset))
          messageClient(%client, 'MsgVoteItem', "", %key, 'VoteResetServer', 'reset server defaults', 'Reset the Server');
 
@@ -1240,15 +1242,15 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 
       if($Host::EvoSuperAdminCRCCheck && (%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminCRCCheck)))
 	{
-         if(!$CRCCountdownStarted)
-         {
-            if($Host::CRCTextures)
-               messageClient(%client, 'MsgVoteItem', "", %key, 'switchCRCCheck', 'Disable CRC Check', 'Disable CRC Check');
-            else
-               messageClient(%client, 'MsgVoteItem', "", %key, 'switchCRCCheck', 'Enable CRC Check', 'Enable CRC Check');
-         }
-         else
-            messageClient(%client, 'MsgVoteItem', "", %key, 'cancelServerRestart', 'cancel server restart', 'Stop Server Restart');
+         //if(!$CRCCountdownStarted)
+         //{
+            //if($Host::CRCTextures)
+               //messageClient(%client, 'MsgVoteItem', "", %key, 'switchCRCCheck', 'Disable CRC Check', 'Disable CRC Check');
+            //else
+               //messageClient(%client, 'MsgVoteItem', "", %key, 'switchCRCCheck', 'Enable CRC Check', 'Enable CRC Check');
+         //}
+         //else
+            //messageClient(%client, 'MsgVoteItem', "", %key, 'cancelServerRestart', 'cancel server restart', 'Stop Server Restart');
       }
 
       if((%client.isSuperAdmin && $Host::EvoSuperAdminSwitch) || (%client.isAdmin && $Host::EvoAdminSwitch))
