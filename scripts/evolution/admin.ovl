@@ -604,7 +604,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
          }
-	  case "VoteSCtFProMode":
+	  case "SCtFProMode":
          if( %isAdmin && !%client.ForceVote )
          {
             adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
@@ -617,7 +617,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
                return;
             }
-			%actionMsg = ($Host::VoteSCtFProMode ? "disable Pro mode" : "enable Pro mode");
+			%actionMsg = ($Host::SCtFProMode ? "disable Pro mode" : "enable Pro mode");
             for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
             {
                %cl = ClientGroup.getObject(%idx);
