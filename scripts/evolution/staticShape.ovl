@@ -3,20 +3,26 @@ function StaticShapeData::damageObject(%data, %targetObject, %sourceObject, %pos
 {
 	//echo( %targetObject.getDataBlock().getClassName() );
 	//echo( %targetObject.getDataBlock().getName() );
-
-   // No Base Rape option   
-   if(!$Host::TournamentMode && $Host::EvoNoBaseRapeEnabled && $Host::EvoNoBaseRapeClassicPlayerCount > $TotalTeamPlayerCount)
-   {
-    //  if(%targetObject.getDataBlock().getClassName() !$= "TurretData" && !%targetObject.getDataBlock().deployedObject)
-		%targetname = %targetObject.getDataBlock().getName();            
 	
-			if( %targetname $= "GeneratorLarge" || %targetname $= "StationInventory" || %targetname $= "SolarPanel" ) 
-			{
-			NBRAssetSound( %game, %sourceObject );
+   %targetname = %targetObject.getDataBlock().getName();    
+   
+   if(!$Host::TournamentMode && $Host::EvoNoBaseRapeEnabled && $Host::EvoNoBaseRapeClassicPlayerCount > $TotalTeamPlayerCount)
+   {        
+		if( %targetname $= "GeneratorLarge" || %targetname $= "StationInventory" || %targetname $= "SolarPanel" ) 
+		{
+			//NBRAssetSound( %game, %sourceObject );
 			return;
-			}	
-			
+		}
    }
-   Parent::damageObject(%data, %targetObject, %sourceObject, %position, %amount, %damageType);
+   //Used on some maps to make invs invincible
+   else if( $CurrentMission $= "SmallCrossing" || $CurrentMission $= "Bulwark")
+   {
+		if( %targetObject.invincible && %targetname $= "StationInventory" )
+		{
+			//NBRAssetSound( %game, %sourceObject );
+			return;
+		}
+   }
+   
+   parent::damageObject(%data, %targetObject, %sourceObject, %position, %amount, %damageType);  
 }
-
