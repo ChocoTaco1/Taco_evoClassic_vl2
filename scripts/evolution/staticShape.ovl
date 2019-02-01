@@ -10,7 +10,7 @@ function StaticShapeData::damageObject(%data, %targetObject, %sourceObject, %pos
    {        
 		if( %targetname $= "GeneratorLarge" || %targetname $= "StationInventory" || %targetname $= "SolarPanel" ) 
 		{
-			//NBRAssetSound( %game, %sourceObject );
+			NBRAssetSound( %game, %sourceObject );
 			return;
 		}
    }
