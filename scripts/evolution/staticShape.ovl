@@ -6,20 +6,20 @@ function StaticShapeData::damageObject(%data, %targetObject, %sourceObject, %pos
 	
    %targetname = %targetObject.getDataBlock().getName();    
    
-   if(!$Host::TournamentMode && $Host::EvoNoBaseRapeEnabled && $Host::EvoNoBaseRapeClassicPlayerCount > $TotalTeamPlayerCount)
-   {        
-		if( %targetname $= "GeneratorLarge" || %targetname $= "StationInventory" || %targetname $= "SolarPanel" ) 
-		{
-			NBRAssetSound( %game, %sourceObject );
-			return;
-		}
-   }
    //Used on some maps to make invs invincible
-   else if( $CurrentMission $= "SmallCrossing" || $CurrentMission $= "Bulwark")
+   if( $CurrentMission $= "SmallCrossing" || $CurrentMission $= "Bulwark")
    {
 		if( %targetObject.invincible && %targetname $= "StationInventory" )
 		{
 			//NBRAssetSound( %game, %sourceObject );
+			return;
+		}
+   }
+   else if(!$Host::TournamentMode && $Host::EvoNoBaseRapeEnabled && $Host::EvoNoBaseRapeClassicPlayerCount > $TotalTeamPlayerCount)
+   {        
+		if( %targetname $= "GeneratorLarge" || %targetname $= "StationInventory" || %targetname $= "SolarPanel" ) 
+		{
+			NBRAssetSound( %game, %sourceObject );
 			return;
 		}
    }
