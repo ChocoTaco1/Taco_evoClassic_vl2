@@ -6,7 +6,7 @@ function StaticShapeData::damageObject(%data, %targetObject, %sourceObject, %pos
 	
    %targetname = %targetObject.getDataBlock().getName();    
    
-   //Used on some maps to make invs invincible
+      //Used on some maps to make invs invincible
    if( $CurrentMission $= "SmallCrossing" || $CurrentMission $= "Bulwark")
    {
 		if( %targetObject.invincible && %targetname $= "StationInventory" )
@@ -16,10 +16,14 @@ function StaticShapeData::damageObject(%data, %targetObject, %sourceObject, %pos
 		}
    }
    else if(!$Host::TournamentMode && $Host::EvoNoBaseRapeEnabled && $Host::EvoNoBaseRapeClassicPlayerCount > $TotalTeamPlayerCount)
-   {        
+   {        		
 		if( %targetname $= "GeneratorLarge" || %targetname $= "StationInventory" || %targetname $= "SolarPanel" ) 
 		{
-			NBRAssetSound( %game, %sourceObject );
+			//Notify only if asset is on other team
+			if( %targetObject.team !$= %sourceObject.team )
+			{
+				NBRAssetSound( %game, %sourceObject );
+			}
 			return;
 		}
    }
