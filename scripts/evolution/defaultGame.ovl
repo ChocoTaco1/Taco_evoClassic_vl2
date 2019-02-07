@@ -1110,7 +1110,24 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
          return; // Display no further vote options
       }
    }
+   if (!$Host::TournamentMode && $CurrentMissionType $= "CTF" && $Host::EnableSetNextMission )
+   {
+	  if (%client.NextMission > 0)
+         %client.NextMission = %client.NextMission - 1;
 
+	  if (%client.NextMission > 0)
+      {
+		 messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionSmallCrossing', 'Set next mission to Small Crossing', 'Set next mission to Small Crossing');
+		 messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionHighOctane', 'Set next mission to High Octane', 'Set next mission to High Octane' );
+         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionTheFray', 'Set next mission to The Fray', 'Set next mission to The Fray');
+         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMassive', 'Set next mission to Massive', "Set next mission to Massive");
+		 messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionIceDance', 'Set next mission to The Fray', 'Set next mission to IceDance');
+         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionLogansRun', 'Set next mission to Massive', "Set next mission to Logan's Run");
+         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionRollercoaster', 'Set next mission to Rollercoaster', "Set next mission to Rollercoaster");
+		 messageClient(%client, 'MsgVoteItem', "", %key, 'NextMission', 'Cancel Set Next Mission', "Cancel 'Set Next Mission...'");
+         return; // Display no further vote options
+      }
+   }
    // TEAM OPTIONS
    if(!$Host::TournamentMode)
    {
@@ -1194,8 +1211,10 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 			messageClient(%client, 'MsgVoteItem', "", %key, 'VoteSkipMission', 'skip the mission to', 'Skip the Mission' );
             messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeTimeLimit', 'change the time limit', 'Change the Time Limit');
 
-            if ( $Host::EvoForcedVotes )
+            if( $Host::EvoForcedVotes )
                messageClient(%client, 'MsgVoteItem', "", %key, 'ForceVote', 'Vote to ...', 'Vote to ...');
+			if( $Host::EnableSetNextMission && $CurrentMissionType $= "CTF" )
+				messageClient(%client, 'MsgVoteItem', "", %key, 'NextMission', 'Set Next Mission...', 'Set Next Mission...');
          }
          else
          {

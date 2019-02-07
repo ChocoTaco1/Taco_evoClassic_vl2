@@ -480,7 +480,91 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                messageClient( %client, '', "Now select what to vote on, please." );
             }
          }
-
+	  case "NextMission":
+         if (%client.isAdmin && $Host::EnableSetNextMission )
+         {
+            if (%client.NextMission)
+            {
+               %client.NextMission = 0;
+               messageClient( %client, '', 'Set next mission ... cancelled.' );
+            }
+            else
+            {
+               %client.NextMission = 2;
+			   messageClient( %client, 'MsgVoteItem', 'Next Mission: %1', $EvoCachedNextMission );
+			   messageClient( %client, '', "Emergency use only. Now select the next mission to set." );
+            }
+         }
+	  case "SetMissionSmallCrossing":
+	     if (%client.isAdmin )
+		 {
+			if( $EvoCachedNextMission !$= "SmallCrossing" && $CurrentMission !$= "SmallCrossing" )
+			{
+				$EvoCachedNextMission = "SmallCrossing";
+				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+			}
+		 }
+	  case "SetMissionHighOctane":
+	     if (%client.isAdmin )
+		 {
+			if( $EvoCachedNextMission !$= "HighOctane" && $CurrentMission !$= "HighOctane" )
+			{
+				$EvoCachedNextMission = "HighOctane";
+				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+			}
+		 }
+	  case "SetMissionTheFray":
+	     if (%client.isAdmin )
+		 {
+			if( $EvoCachedNextMission !$= "TheFray" && $CurrentMission !$= "TheFray" )
+			{
+				$EvoCachedNextMission = "TheFray";
+				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+			}
+		 }
+	  case "SetMissionMassive":
+	     if (%client.isAdmin )
+		 {
+			if( $EvoCachedNextMission !$= "S5_Massive" && $CurrentMission !$= "S5_Massive" )
+			{
+				$EvoCachedNextMission = "S5_Massive";
+				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+			}
+		 }
+	  case "SetMissionIceDance":
+	     if (%client.isAdmin )
+		 {
+			if( $EvoCachedNextMission !$= "S5_Icedance" && $CurrentMission !$= "S5_Icedance" )
+			{
+				$EvoCachedNextMission = "S5_Icedance";
+				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+			}
+		 }
+	  case "SetMissionLogansRun":
+	     if (%client.isAdmin )
+		 {
+			if( $EvoCachedNextMission !$= "Logans_Run" && $CurrentMission !$= "Logans_Run" )
+			{
+				$EvoCachedNextMission = "Logans_Run";
+				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+			}
+		 }
+	  case "SetMissionRollercoaster":
+	     if (%client.isAdmin )
+		 {
+			if( $EvoCachedNextMission !$= "Rollercoaster_nef" && $CurrentMission !$= "Rollercoaster_nef" )
+			{
+				$EvoCachedNextMission = "Rollercoaster_nef";
+				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+			}
+		 }
       case "switchCRCCheck":
          if($Host::EvoSuperAdminCRCCheck && (%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminCRCCheck)))
          {
