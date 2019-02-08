@@ -64,11 +64,13 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 
                   	if (%cl.isAdmin == true || (%cl.team == %client.team && !%cl.isAIControlled()))
 					{   
-						if(%cl.isAdmin == true && %cl.team !$= %client.team) {
+						if(%cl.isAdmin == true && %cl.team !$= %client.team) 
+						{
 							messageClient(%cl, 'AdminOtherTeamKickVoteStarted', '\c2%1 has initiated a vote to kick %2 on the \c3Other Team.~wgui/objective_notification.wav', %client.name, %arg1.name);
 						}
 						else
-						messageClient( %cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, %actionMsg, %arg1.name); 
+							messageClient( %cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, %actionMsg, %arg1.name);
+							
 						%clientsVoting++;
 					}
                }
@@ -492,75 +494,101 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
             {
                %client.NextMission = 2;
 			   messageClient( %client, 'MsgVoteItem', 'Next Mission: %1', $EvoCachedNextMission );
-			   messageClient( %client, '', "Emergency use only. Now select the next mission to set." );
+			   messageClient( %client, '', "Now select the next mission to set, please." );
             }
          }
-	  case "SetMissionSmallCrossing":
+	  case "SetNextMissionRestore":
+         if (%client.isAdmin )
+         {
+			$EvoCachedNextMission = $SetNextMissionRestore;
+			$SetNextMissionRestore = "";
+			messageClient( %client, 'MsgVoteItem', 'Original Mission restored to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+			adminLog(%client, " restored the original mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+         }
+	  case "SetMissionMapSlot1":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= "SmallCrossing" && $CurrentMission !$= "SmallCrossing" )
+			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot1 && $CurrentMission !$= $Host::SetNextMissionMapSlot1 )
 			{
-				$EvoCachedNextMission = "SmallCrossing";
+				$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $Host::SetNextMissionMapSlot1;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
 		 }
-	  case "SetMissionHighOctane":
+	  case "SetMissionMapSlot2":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= "HighOctane" && $CurrentMission !$= "HighOctane" )
+			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot2 && $CurrentMission !$= $Host::SetNextMissionMapSlot2 )
 			{
-				$EvoCachedNextMission = "HighOctane";
+				$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $Host::SetNextMissionMapSlot2;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
 		 }
-	  case "SetMissionTheFray":
+	  case "SetMissionMapSlot3":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= "TheFray" && $CurrentMission !$= "TheFray" )
+			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot3 && $CurrentMission !$= $Host::SetNextMissionMapSlot3 )
 			{
-				$EvoCachedNextMission = "TheFray";
+				$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $Host::SetNextMissionMapSlot3;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
 		 }
-	  case "SetMissionMassive":
+	  case "SetMissionMapSlot4":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= "S5_Massive" && $CurrentMission !$= "S5_Massive" )
+			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot4 && $CurrentMission !$= $Host::SetNextMissionMapSlot4 )
 			{
-				$EvoCachedNextMission = "S5_Massive";
+				$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $Host::SetNextMissionMapSlot4;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
 		 }
-	  case "SetMissionIceDance":
+	  case "SetMissionMapSlot5":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= "S5_Icedance" && $CurrentMission !$= "S5_Icedance" )
+			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot5 && $CurrentMission !$= $Host::SetNextMissionMapSlot5 )
 			{
-				$EvoCachedNextMission = "S5_Icedance";
+				$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $Host::SetNextMissionMapSlot5;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
 		 }
-	  case "SetMissionLogansRun":
+	  case "SetMissionMapSlot6":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= "Logans_Run" && $CurrentMission !$= "Logans_Run" )
+			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot6 && $CurrentMission !$= $Host::SetNextMissionMapSlot6 )
 			{
-				$EvoCachedNextMission = "Logans_Run";
+				$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $Host::SetNextMissionMapSlot6;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
 		 }
-	  case "SetMissionRollercoaster":
+	  case "SetMissionMapSlot7":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= "Rollercoaster_nef" && $CurrentMission !$= "Rollercoaster_nef" )
+			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot7 && $CurrentMission !$= $Host::SetNextMissionMapSlot7 )
 			{
-				$EvoCachedNextMission = "Rollercoaster_nef";
+				$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $Host::SetNextMissionMapSlot7;
+				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+			}
+		 }
+	  case "SetMissionMapSlot8":
+	     if (%client.isAdmin )
+		 {
+			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot8 && $CurrentMission !$= $Host::SetNextMissionMapSlot8 )
+			{
+				$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $Host::SetNextMissionMapSlot8;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}

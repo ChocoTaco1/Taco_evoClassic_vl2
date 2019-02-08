@@ -37,14 +37,11 @@ function DefaultGame::gameOver(%game)
       $ETMCMapUpdated = "";
    }
    
-    //Reset NoBaseRape Notify
-	ResetNBRNotify();
-	//Reset TeamBalance Notify
-	ResetTeamBalanceNotifyGameOver( %game );
-	//Reset Everything to do with Vote Overtime
-	ResetVOall(%game);
-	//Reset GetCounts
-	ResetClientChangedTeams();
+	ResetNBRNotify(); //Reset NoBaseRape Notify
+	ResetTeamBalanceNotifyGameOver( %game ); //Reset TeamBalance Notify
+	ResetVOall(%game); 	//Reset Everything to do with Vote Overtime
+	ResetClientChangedTeams(); 	//Reset GetCounts
+	$SetNextMissionRestore = ""; //Reset SetNextMission
 	
 }
 
@@ -1117,13 +1114,16 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 
 	  if (%client.NextMission > 0)
       {
-		 messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionSmallCrossing', 'Set next mission to Small Crossing', 'Set next mission to Small Crossing');
-		 messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionHighOctane', 'Set next mission to High Octane', 'Set next mission to High Octane' );
-         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionTheFray', 'Set next mission to The Fray', 'Set next mission to The Fray');
-         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMassive', 'Set next mission to Massive', "Set next mission to Massive");
-		 messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionIceDance', 'Set next mission to The Fray', 'Set next mission to IceDance');
-         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionLogansRun', 'Set next mission to Massive', "Set next mission to Logan's Run");
-         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionRollercoaster', 'Set next mission to Rollercoaster', "Set next mission to Rollercoaster");
+		 messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot1', 'Set next mission to %1', 'Set next mission to %1', $Host::SetNextMissionMapSlot1 );
+		 messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot2', 'Set next mission to %1', 'Set next mission to %1', $Host::SetNextMissionMapSlot2 );
+         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot3', 'Set next mission to %1', 'Set next mission to %1', $Host::SetNextMissionMapSlot3 );
+         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot4', 'Set next mission to %1', 'Set next mission to %1', $Host::SetNextMissionMapSlot4 );
+		 messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot5', 'Set next mission to %1', 'Set next mission to %1', $Host::SetNextMissionMapSlot5 );
+         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot6', 'Set next mission to %1', 'Set next mission to %1', $Host::SetNextMissionMapSlot6 );
+         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot7', 'Set next mission to %1', 'Set next mission to %1', $Host::SetNextMissionMapSlot7 );
+         messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot8', 'Set next mission to %1', 'Set next mission to %1', $Host::SetNextMissionMapSlot8 );
+		 if($SetNextMissionRestore !$= "")
+		 messageClient(%client, 'MsgVoteItem', "", %key, 'SetNextMissionRestore', 'Restore Original Mission', "Restore Original Mission");
 		 messageClient(%client, 'MsgVoteItem', "", %key, 'NextMission', 'Cancel Set Next Mission', "Cancel 'Set Next Mission...'");
          return; // Display no further vote options
       }
