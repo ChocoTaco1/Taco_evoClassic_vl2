@@ -1,35 +1,36 @@
+
 // sendModInfoToClient(%client)
 // Info: During the briefing, shows server settings (source: classic mod)
 function sendModInfoToClient(%client)
 {
-   %time = "<color:ffb734>Time limit: <color:29DEE7>" @ $Host::TimeLimit;
-   %max = "<color:ffb734>Max players: <color:29DEE7>" @ $Host::MaxPlayers;
-   %td = "<color:ffb734>Team damage: <color:29DEE7>" @ ($Host::TeamDamageOn ? "On" : "Off");
-   %crc = "<color:ffb734>CRC checking: <color:29DEE7>" @ ($Host::CRCTextures ? "On" : "Off");
-   %pure = "<color:ffb734>Pure server: <color:29DEE7>" @ ($Host::PureServer ? "On" : "Off");
-   %smurf = "<color:ffb734>Refuse smurfs: <color:29DEE7>" @ ($Host::NoSmurfs ? "On" : "Off");
-   %random = "<color:ffb734>Random teams: <color:29DEE7>" @ ($RandomTeams ? "On" : "Off");
-   %fair = "<color:ffb734>Fair teams: <color:29DEE7>" @ ($Host::ClassicFairTeams ? "On" : "Off");
-   %rape = "<color:ffb734>No Base Rape: <color:29DEE7>" @ ($Host::EvoNoBaseRapeEnabled ? "On" : "Off");
-   %net = "<color:ffb734>Packets Rate / Size: <color:29DEE7>" @ $pref::Net::PacketRateToClient @ " / " @ $pref::Net::PacketSize;
-   %discord = "<color:ffb734>Join Discord: <color:29DEE7>" @ $Host::Discord;
-   %git = "<color:ffb734>Server Github: <color:29DEE7>" @ $Host::Github;
-   %host = "<color:ffb734>Hosted by: <color:29DEE7>" @ $Host::HostedBy;
+   %time = "<color:" @ $Host::loadingmsgcolor1 @ ">Time limit: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::TimeLimit;
+   %max = "<color:" @ $Host::loadingmsgcolor1 @ ">Max players: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::MaxPlayers;
+   %td = "<color:" @ $Host::loadingmsgcolor1 @ ">Team damage: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::TeamDamageOn ? "On" : "Off");
+   %crc = "<color:" @ $Host::loadingmsgcolor1 @ ">CRC checking: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::CRCTextures ? "On" : "Off");
+   %pure = "<color:" @ $Host::loadingmsgcolor1 @ ">Pure server: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::PureServer ? "On" : "Off");
+   %smurf = "<color:" @ $Host::loadingmsgcolor1 @ ">Refuse smurfs: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::NoSmurfs ? "On" : "Off");
+   %random = "<color:" @ $Host::loadingmsgcolor1 @ ">Random teams: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($RandomTeams ? "On" : "Off");
+   %fair = "<color:" @ $Host::loadingmsgcolor1 @ ">Fair teams: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::ClassicFairTeams ? "On" : "Off");
+   %rape = "<color:" @ $Host::loadingmsgcolor1 @ ">No Base Rape: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::EvoNoBaseRapeEnabled ? "On" : "Off");
+   %net = "<color:" @ $Host::loadingmsgcolor1 @ ">Packets Rate / Size: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $pref::Net::PacketRateToClient @ " / " @ $pref::Net::PacketSize;
+   %loadingmsgline1 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline1 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline1content;
+   %loadingmsgline2 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline2 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline2content;
+   %loadingmsgline3 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline3 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline3content;
 
 
    if($Host::EvoStats && (!$Host::TournamentMode || ($Host::TournamentMode && $Host::EvoStatsTourney)) && $Host::EvoStatsType != 0)
-      %stats = "<color:ffb734>Stats based on: <color:29DEE7>" @ ($Host::EvoStatsType == 1 ? "Kills" : "Damage");
+      %stats = "<color:" @ $Host::loadingmsgcolor1 @ ">Stats based on: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::EvoStatsType == 1 ? "Kills" : "Damage");
 
    if($Host::EvoNoBaseRapeEnabled)
-   	%rapeppl = "<color:ffb734>Min No Base Rape: <color:29DEE7>" @ $Host::EvoNoBaseRapeClassicPlayerCount;
+   	%rapeppl = "<color:" @ $Host::loadingmsgcolor1 @ ">Min No Base Rape: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::EvoNoBaseRapeClassicPlayerCount;
 
    if($Evo::ETMMode && $ETMmode::CurrentMap <= $ETMmode::Counter)
    {
-   	%nmis = "<color:ffb734>Next mission: <color:29DEE7>" @ $ETMmode::MapDisplayName[$ETMmode::CurrentMap];
+   	%nmis = "<color:" @ $Host::loadingmsgcolor1 @ ">Next mission: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $ETMmode::MapDisplayName[$ETMmode::CurrentMap];
    }
    else
    {
-       %nmis = "<color:ffb734>Next mission: <color:29DEE7>" @ findNextCycleMission();
+       %nmis = "<color:" @ $Host::loadingmsgcolor1 @ ">Next mission: <color:" @ $Host::loadingmsgcolor2 @ ">" @ findNextCycleMission();
        if ( $Host::ClassicRandomMissions )
 	 {
 	   %nmis = %nmis SPC "(Random)";
@@ -40,20 +41,20 @@ function sendModInfoToClient(%client)
 	// classic doesn't use a variable to print the version, it needs to be edited manually
    %modName = "";
    //%ModLine[0] = "<color:ffb734>Classic Developers: <color:29DEE7><a:PLAYER\tz0dd>z0dd</a> and <a:PLAYER\t-ZOD->ZOD</a>";
-   %ModLine[0] = "<spush><font:sui generis:22><color:29DEE7><just:center>CLASSIC<spop>";
+   %ModLine[0] = "<spush><font:sui generis:22><color:" @ $Host::loadingmsgcolor2 @ "><just:center>CLASSIC<spop>";
    %ModLine[1] = "";
-   %ModLine[1] = "<spush><font:verdana bold:16><color:33CCCC>Version: <color:29DEE7>" @ $classicVersion @ "<spop>";
+   %ModLine[1] = "<spush><font:verdana bold:16><color:" @ $Host::loadingmsgcolor3 @ ">Version: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $classicVersion @ "<spop>";
    %ModLine[3] = "";
-   %ModLine[4] = "<spush><font:verdana bold:16><color:33CCCC>Developers: <color:29DEE7><a:PLAYER\tz0dd>z0dd</a> <color:33CCCC>and <color:29DEE7><a:PLAYER\t-ZOD->ZOD</a><spop>";
+   %ModLine[4] = "<spush><font:verdana bold:16><color:" @ $Host::loadingmsgcolor3 @ ">Developers: <color:" @ $Host::loadingmsgcolor2 @ "><a:PLAYER\tz0dd>z0dd</a> <color:" @ $Host::loadingmsgcolor3 @ ">and <color:" @ $Host::loadingmsgcolor2 @ "><a:PLAYER\t-ZOD->ZOD</a><spop>";
    %ModLine[5] = "<just:left><font:univers:18>";
    
    %ModCnt = 6;
 
    %SpecialCnt = 4;
-   %SpecialTextLine[0] = %discord;
-   %SpecialTextLine[1] = %git;
+   %SpecialTextLine[0] = %loadingmsgline1;
+   %SpecialTextLine[1] = %loadingmsgline2;
    %SpecialTextLine[2] = %net;
-   %SpecialTextLine[3] = %host;
+   %SpecialTextLine[3] = %loadingmsgline3;
    //%SpecialTextLine[4] = %nmis;
 
    %ServerCnt = 8;
