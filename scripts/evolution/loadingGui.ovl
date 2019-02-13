@@ -45,8 +45,9 @@ function sendModInfoToClient(%client)
 	   %nmis = %nmis SPC "(Random)";
 	 }
    }
+   %turrets = "<color:" @ $Host::loadingmsgcolor1 @ ">Min Turrets: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::EnableTurretPlayerCount;
 
-
+   
 	// classic doesn't use a variable to print the version, it needs to be edited manually
    %modName = "";
    //%ModLine[0] = "<color:ffb734>Classic Developers: <color:29DEE7><a:PLAYER\tz0dd>z0dd</a> and <a:PLAYER\t-ZOD->ZOD</a>";
@@ -71,12 +72,12 @@ function sendModInfoToClient(%client)
    %ServerTextLine[1] = %max;
    %ServerTextLine[2] = %td;
    %ServerTextLine[3] = %smurf;
-   %ServerTextLine[4] = %rape;
-   %ServerTextLine[5] = %rapeppl;
+   %ServerTextLine[4] = %rapeppl;
+   %ServerTextLine[5] = %turrets;
    %ServerTextLine[6] = %stats;
    %ServerTextLine[7] = %nmis;
    
-      //%serverTextLine[3] = %crc;
+   //%serverTextLine[3] = %crc;
    //%ServerTextLine[4] = %pure;
 
    %singlePlayer = $CurrentMissionType $= "SinglePlayer";
