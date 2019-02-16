@@ -6,7 +6,7 @@ function chatMessageTeam(%sender, %team, %msgString, %a1, %a2, %a3, %a4, %a5, %a
     return;
 
    if(!$Host::TournamentMode || !$Host::EvoTeamSpam)
-      if((%msgString $= "") || spamAlert(%sender))
+      if((%msgString $= "") || spamAlert(%sender) || (%a2 $= "y") || (%a2 $= "yy"))
          return;
       
    for(%i = 0; %i < ClientGroup.getCount(); %i++)
@@ -90,7 +90,7 @@ function chatMessageAll(%sender, %msgString, %a1, %a2, %a3, %a4, %a5, %a6, %a7, 
       return;
    }
 
-   if ( ( %msgString $= "" ) || ( spamAlert(%sender) ) )
+   if (( %msgString $= "" ) || ( spamAlert(%sender) ) || ( %a2 $= "u") || ( %a2 $= "uu"))
       return;
 
 	// admins can chat anyway
