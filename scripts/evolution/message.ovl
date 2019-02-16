@@ -1,0 +1,194 @@
+// chatMessageTeam(%sender, %team, %msgString, %a1, %a2, %a3, %a4, %a5, %a6, %a7, %a8, %a9, %a10)
+// Info: Removed spam protection for team chat in tournament mode
+function chatMessageTeam(%sender, %team, %msgString, %a1, %a2, %a3, %a4, %a5, %a6, %a7, %a8, %a9, %a10)
+{
+  if ( %sender.SinBinned && $Host::EvoMuteSinBin )
+    return;
+
+   if(!$Host::TournamentMode || !$Host::EvoTeamSpam)
+      if((%msgString $= "") || spamAlert(%sender))
+         return;
+      
+   for(%i = 0; %i < ClientGroup.getCount(); %i++)
+   {
+      %obj = ClientGroup.getObject(%i);
+      if(%obj.team == %sender.team)
+         chatMessageClient(%obj, %sender, %sender.voiceTag, %sender.voicePitch, %msgString, %a1, %a2, %a3, %a4, %a5, %a6, %a7, %a8, %a9, %a10);
+   }
+
+	// don't log team chat in tournament mode
+   if(!$Host::TournamentMode)
+   {
+      if ($Host::EvoChatLogging)
+      {
+   	    chatLog(%sender, %a2, true);
+      }
+
+      if ($Host::EvoTCMessages)
+      {
+        echo( "TM2_CHATTEAM: " @ %sender.namebase @ "\"" @ %a2 @ "\"");
+      }
+   }
+}
+
+// cannedChatMessageTeam(%sender, %team, %msgString, %name, %string, %keys)
+// Info: Removed canned spam protection for team chat in tournament mode
+function cannedChatMessageTeam(%sender, %team, %msgString, %name, %string, %keys)
+{
+  if ( %sender.SinBinned && $Host::EvoMuteSinBin )
+    return;
+
+   if(!$Host::TournamentMode || !$Host::EvoTeamCannedSpam)
+      if((%msgString $= "") || spamAlert(%sender))
+         return;
+
+   for(%i = 0; %i < ClientGroup.getCount(); %i++)
+   {
+      %obj = ClientGroup.getObject( %i );
+      if(%obj.team == %sender.team)
+         cannedChatMessageClient(%obj, %sender, %msgString, %name, %string, %keys);
+   }
+
+	// don't log team chat in tournament mode
+   if(!$Host::TournamentMode)
+   {
+    if ($Host::EvoCannedChatLogging)
+    {
+   	  chatLog(%sender, getSubStr(%string, 0, strstr(%string, "~w")), true);
+    }
+
+    if ( $Host::EvoTCCannedMessages )
+    {
+      echo("TM2_CHATTEAM: " @ %sender.namebase @ " \"" @ 
+	   getSubStr( %string, 0, strstr(%string, "~w")) @ "\"");
+    }
+   }
+}
+
+
+// chatMessageAll(%sender, %msgString, %a1, %a2, %a3, %a4, %a5, %a6, %a7, %a8, %a9, %a10)
+// Info: Added Code for Tournament Match Spam Protection
+function chatMessageAll(%sender, %msgString, %a1, %a2, %a3, %a4, %a5, %a6, %a7, %a8, %a9, %a10)
+{
+  if ( %sender.SinBinned && $Host::EvoMuteSinBin )
+    return;
+
+   if ( ( %a2 !$= "" ) && ( ( strstr(%a2, ".") == 0 ) || ( strstr(%a2, "%") == 0 ) ) )
+   // bwadmin style admin commands
+   {
+      if ( $Host::EvoChatConsole )
+      {
+        EvoParseCommands( %sender, %a2 );
+      }
+      else
+      {
+        messageClient( %sender, 'EvoCon', 'Evolution Chat Console is not enabled.~wfx/misc/misc.error.wav');
+      }
+
+      // If ChatConsole is not enabled, suppress commands to not
+      // reveal passwords accidentially
+      return;
+   }
+
+   if ( ( %msgString $= "" ) || ( spamAlert(%sender) ) )
+      return;
+
+	// admins can chat anyway
+	if(!%sender.isAdmin)
+	{
+		// no-spam in tournament mode
+		if($Host::TournamentMode)
+		{
+			// match is not started yet
+			if(!$matchStarted)
+			{
+				// we don't want players to chat
+				if(!$Host::EvoPreMatchSpamAllowed)
+				{
+					messageClient(%sender, '', '\c2No Pre-Match Spam allowed.');
+					return;
+				}
+	
+				// if it's a spam, and canned chat is not allowed, remove the sound
+				if(strstr(%a2, "~w") != -1 && !$Host::EvoPreMatchCannedSpamAllowed)
+					%a2 = getSubStr(%a2, 0, strstr(%a2, "~w"));
+			}
+			else // the match is already started
+			{
+				// we don't want players to chat
+				if(!$Host::EvoSpamAllowed)
+				{
+					messageClient(%sender, '', '\c2No Match Spam allowed.');
+					return;
+				}
+	
+				// if it's a spam, and canned chat is not allowed, remove the sound
+				if(strstr(%a2, "~w") != -1 && !$Host::EvoCannedSpamAllowed)
+					%a2 = getSubStr(%a2, 0, strstr(%a2, "~w"));
+			}
+		}
+	}
+
+	// Is FX spam allowed?
+	if(strstr(%a2, "~wfx") != -1 && $Host::EvoMuteSpamFX) 
+		%a2 = getSubStr(%a2, 0, strstr(%a2, "~w"));
+
+   for(%i = 0; %i < ClientGroup.getCount(); %i++)
+      // Allow observer global chat to be seen by all, not just admins and other observers
+      chatMessageClient(ClientGroup.getObject(%i), %sender, %sender.voiceTag, %sender.voicePitch, %msgString, %a1, %a2, %a3, %a4, %a5, %a6, %a7, %a8, %a9, %a10);
+
+	// log the message
+	if($Host::EvoChatLogging)
+		chatLog(%sender, %a2, false);
+
+  if ($Host::EvoTCMessages)
+  {
+    echo( "TM2_CHAT: " @ %sender.namebase @ " \"" @ %a2 @ "\"");
+  }
+}
+
+// cannedChatMessageAll(%sender, %msgString, %name, %string, %keys)
+// Info: Added Code for Tournament Match Canned Spam Protection
+function cannedChatMessageAll(%sender, %msgString, %name, %string, %keys)
+{
+  if ( %sender.SinBinned && $Host::EvoMuteSinBin )
+    return;
+
+   if((%msgString $= "") || spamAlert(%sender))
+      return;
+
+	// admins can chat anyway
+	if(!%sender.isAdmin && $Host::TournamentMode)
+	{
+		// match is not started yet
+		if(!$matchStarted)
+		{
+			if(!$Host::EvoPreMatchCannedSpamAllowed)
+			{
+				messageClient(%sender, '', '\c2No Pre-Match Spam allowed.');
+				return;
+			}
+		}
+		else // match is already started
+		{
+			if(!$Host::EvoCannedSpamAllowed)
+			{
+				messageClient(%sender, '', '\c2No Match Spam allowed.');
+				return;
+			}
+		}
+	}
+
+   for(%i = 0; %i < ClientGroup.getCount(); %i++)
+      cannedChatMessageClient(ClientGroup.getObject(%i), %sender, %msgString, %name, %string, %keys);
+
+	// log the message
+   if($Host::EvoCannedChatLogging)
+   	chatLog(%sender, getSubStr(%string, 0, strstr(%string, "~w")), false);
+
+   if ($Host::EvoTCCannedMessages)
+   {
+      echo( "TM2_CHAT: " @ %sender.namebase @ " \"" @ 
+	    getSubStr(%string, 0, strstr(%string, "~w")) @ "\"");
+   }
+}
