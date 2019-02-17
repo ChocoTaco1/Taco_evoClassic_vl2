@@ -42,6 +42,7 @@ function DefaultGame::gameOver(%game)
 	ResetVOall(%game); 	//Reset Everything to do with Vote Overtime
 	ResetClientChangedTeams(); 	//Reset GetCounts
 	$SetNextMissionRestore = ""; //Reset SetNextMission
+	MapRepetitionCheckerReset( %game ); //Reset MapRepetitionChecker
 	
 }
 
