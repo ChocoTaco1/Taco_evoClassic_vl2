@@ -508,10 +508,11 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 	  case "SetMissionMapSlot1":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot1 && $CurrentMission !$= $Host::SetNextMissionMapSlot1 )
+			if( $EvoCachedNextMission !$= $SetNextMissionMapSlot1 && $CurrentMission !$= $SetNextMissionMapSlot1 )
 			{
-				$SetNextMissionRestore = $EvoCachedNextMission;
-				$EvoCachedNextMission = $Host::SetNextMissionMapSlot1;
+				if( $SetNextMissionRestore $= "")
+					$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $SetNextMissionMapSlot1;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
@@ -519,10 +520,11 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 	  case "SetMissionMapSlot2":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot2 && $CurrentMission !$= $Host::SetNextMissionMapSlot2 )
+			if( $EvoCachedNextMission !$= $SetNextMissionMapSlot2 && $CurrentMission !$= $SetNextMissionMapSlot2 )
 			{
-				$SetNextMissionRestore = $EvoCachedNextMission;
-				$EvoCachedNextMission = $Host::SetNextMissionMapSlot2;
+				if( $SetNextMissionRestore $= "")
+					$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $SetNextMissionMapSlot2;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
@@ -530,10 +532,11 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 	  case "SetMissionMapSlot3":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot3 && $CurrentMission !$= $Host::SetNextMissionMapSlot3 )
+			if( $EvoCachedNextMission !$= $SetNextMissionMapSlot3 && $CurrentMission !$= $SetNextMissionMapSlot3 )
 			{
-				$SetNextMissionRestore = $EvoCachedNextMission;
-				$EvoCachedNextMission = $Host::SetNextMissionMapSlot3;
+				if( $SetNextMissionRestore $= "")
+					$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $SetNextMissionMapSlot3;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
@@ -541,10 +544,11 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 	  case "SetMissionMapSlot4":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot4 && $CurrentMission !$= $Host::SetNextMissionMapSlot4 )
+			if( $EvoCachedNextMission !$= $SetNextMissionMapSlot4 && $CurrentMission !$= $SetNextMissionMapSlot4 )
 			{
-				$SetNextMissionRestore = $EvoCachedNextMission;
-				$EvoCachedNextMission = $Host::SetNextMissionMapSlot4;
+				if( $SetNextMissionRestore $= "")
+					$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $SetNextMissionMapSlot4;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
@@ -552,10 +556,11 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 	  case "SetMissionMapSlot5":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot5 && $CurrentMission !$= $Host::SetNextMissionMapSlot5 )
+			if( $EvoCachedNextMission !$= $SetNextMissionMapSlot5 && $CurrentMission !$= $SetNextMissionMapSlot5 )
 			{
-				$SetNextMissionRestore = $EvoCachedNextMission;
-				$EvoCachedNextMission = $Host::SetNextMissionMapSlot5;
+				if( $SetNextMissionRestore $= "")
+					$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $SetNextMissionMapSlot5;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
@@ -563,10 +568,11 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 	  case "SetMissionMapSlot6":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot6 && $CurrentMission !$= $Host::SetNextMissionMapSlot6 )
+			if( $EvoCachedNextMission !$= $SetNextMissionMapSlot6 && $CurrentMission !$= $SetNextMissionMapSlot6 )
 			{
-				$SetNextMissionRestore = $EvoCachedNextMission;
-				$EvoCachedNextMission = $Host::SetNextMissionMapSlot6;
+				if( $SetNextMissionRestore $= "")
+					$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $SetNextMissionMapSlot6;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
@@ -574,10 +580,11 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 	  case "SetMissionMapSlot7":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot7 && $CurrentMission !$= $Host::SetNextMissionMapSlot7 )
+			if( $EvoCachedNextMission !$= $SetNextMissionMapSlot7 && $CurrentMission !$= $SetNextMissionMapSlot7 )
 			{
-				$SetNextMissionRestore = $EvoCachedNextMission;
-				$EvoCachedNextMission = $Host::SetNextMissionMapSlot7;
+				if( $SetNextMissionRestore $= "")
+					$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $SetNextMissionMapSlot7;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
@@ -585,10 +592,11 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 	  case "SetMissionMapSlot8":
 	     if (%client.isAdmin )
 		 {
-			if( $EvoCachedNextMission !$= $Host::SetNextMissionMapSlot8 && $CurrentMission !$= $Host::SetNextMissionMapSlot8 )
+			if( $EvoCachedNextMission !$= $SetNextMissionMapSlot8 && $CurrentMission !$= $SetNextMissionMapSlot8 )
 			{
-				$SetNextMissionRestore = $EvoCachedNextMission;
-				$EvoCachedNextMission = $Host::SetNextMissionMapSlot8;
+				if( $SetNextMissionRestore $= "")
+					$SetNextMissionRestore = $EvoCachedNextMission;
+				$EvoCachedNextMission = $SetNextMissionMapSlot8;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
