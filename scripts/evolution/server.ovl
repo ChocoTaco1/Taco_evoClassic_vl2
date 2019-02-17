@@ -458,6 +458,9 @@ function serverCmdMissionStartPhase3Done(%client, %seq)
    }
    else if($Host::TournamentMode)
       %client.motd = true;
+	
+   //Map Repetition Check
+   MapRepetitionChecker();
 }
 
 // serverCmdSAD( %client, %password )
