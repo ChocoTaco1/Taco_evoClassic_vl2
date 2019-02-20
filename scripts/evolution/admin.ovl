@@ -66,15 +66,19 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 					{   
 						if(%cl.isAdmin == true && %cl.team !$= %client.team) 
 						{
-							messageClient(%cl, 'AdminOtherTeamKickVoteStarted', '\c2%1 has initiated a vote to kick %2 on the \c3Other Team.~wgui/objective_notification.wav', %client.name, %arg1.name);
+							messageClient(%cl, 'AdminOtherTeamKickVoteStarted', '\c2%1 has initiated a vote to kick %2 on the other team.~wgui/objective_notification.wav', %client.name, %arg1.name);
 						}
 						else
-							messageClient( %cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, %actionMsg, %arg1.name);
+							messageClient( %cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, "kick player", %arg1.name);
 							
 						%clientsVoting++;
 					}
                }
                playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting, true);
+			   $VoteSoundInProgress = true;
+			   %VoteSoundRandom = getRandom(1,100);
+			   $VoteSoundRandom = %VoteSoundRandom;
+			   schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
             }
             else
             {
@@ -89,7 +93,9 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                }
                playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
 			   $VoteSoundInProgress = true;
-			   schedule(10000, 0, "VoteSound", %game);
+			   %VoteSoundRandom = getRandom(1,100);
+			   $VoteSoundRandom = %VoteSoundRandom;
+			   schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
             }
          }
 
@@ -166,7 +172,9 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
 			$VoteSoundInProgress = true;
-			schedule(10000, 0, "VoteSound", %game);
+			%VoteSoundRandom = getRandom(1,100);
+			$VoteSoundRandom = %VoteSoundRandom;
+			schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
          }
 
 	  case "VoteSkipMission":
@@ -182,19 +190,20 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
                return;
             }
-
             for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
             {
                %cl = ClientGroup.getObject(%idx);
                if(!%cl.isAIControlled())
                {
-                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 \c1%3', %client.name, "skip to the next mission:", $EvoCachedNextMission);
+                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 to %3.', %client.name, "skip the mission", $EvoCachedNextMission );
                   %clientsVoting++;
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
 			$VoteSoundInProgress = true;
-			schedule(10000, 0, "VoteSound", %game);
+			%VoteSoundRandom = getRandom(1,100);
+			$VoteSoundRandom = %VoteSoundRandom;
+			schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
          }
 
       case "VoteFFAMode":
@@ -221,7 +230,9 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
 			$VoteSoundInProgress = true;
-			schedule(10000, 0, "VoteSound", %game);
+			%VoteSoundRandom = getRandom(1,100);
+			$VoteSoundRandom = %VoteSoundRandom;
+			schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
          }
 
       case "VoteFFA2Mode": // allow players to choose the mission
@@ -256,7 +267,9 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
 			$VoteSoundInProgress = true;
-			schedule(10000, 0, "VoteSound", %game);
+			%VoteSoundRandom = getRandom(1,100);
+			$VoteSoundRandom = %VoteSoundRandom;
+			schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
          }
 
       case "VoteTournamentMode":
@@ -371,7 +384,9 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
 			StartVOTimeVote(%game);
-			schedule(10000, 0, "VoteSound", %game);
+			%VoteSoundRandom = getRandom(1,100);
+			$VoteSoundRandom = %VoteSoundRandom;
+			schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
          }
 
       case "VoteGreedMode":
