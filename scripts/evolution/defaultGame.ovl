@@ -1182,9 +1182,8 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
                messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeTimeLimit', 'change the time limit', 'Vote to Change the Time Limit');
 			   
 		    messageClient(%client, 'MsgVoteItem', "", %key, 'VoteSkipMission', 'skip the mission to', 'Vote to Skip Mission' );
-
-
-            //if(%multipleTeams && $Host::EvoAllowPlayerVoteTeamDamage)
+			
+			//if(%multipleTeams && $Host::EvoAllowPlayerVoteTeamDamage)
             //{
                //if($teamDamage)
                   //messageClient(%client, 'MsgVoteItem', "", %key, 'VoteTeamDamage', 'disable team damage', 'Vote to Disable Team Damage');
@@ -1257,6 +1256,13 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
                   //messageClient( %client, 'MsgVoteItem', "", %key, 'VoteRandomTeams', 'enable random teams', 'Enable Random Teams' );
             //}
          }
+		 
+		 //Toggle Tournament Net Client
+		 if(%client.isAdmin && $Host::EnableNetTourneyClient && $CurrentMissionType $= "CTF")
+			messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleTourneyNetClient', 'Disable Tournament Net Client', "Disable Tournament Net Client" );
+		 else if(%client.isAdmin && $CurrentMissionType $= "CTF")
+			messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleTourneyNetClient', 'Enable Tournament Net Client', "Enable Tournament Net Client" );
+		 
       }
 
       if ($Host::EvoServerRules[1] !$= "" )
@@ -1273,12 +1279,6 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 	{
 	  messageClient( %client, 'MsgVoteItem', "", %key, 'clearServerForMatch', 'clear the server', "Clear the Server" );
 	}
-
-    //Toggle Tournament Net Client
-	if(%client.isAdmin && $Host::EnableNetTourneyClient && $CurrentMissionType $= "CTF")
-		messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleTourneyNetClient', 'Disable Tournament Net Client', "Disable Tournament Net Client" );
-	else if(%client.isAdmin && $CurrentMissionType $= "CTF")
-		messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleTourneyNetClient', 'Enable Tournament Net Client', "Enable Tournament Net Client" );  
 	  
 	  if($Host::EvoSuperAdminCRCCheck && (%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminCRCCheck)))
 	{
