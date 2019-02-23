@@ -378,7 +378,8 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                %cl = ClientGroup.getObject(%idx);
                if(!%cl.isAIControlled())
                {
-                  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, "change the time limit to", %arg1);
+                  if(%arg1 $= "999") %arg1 = "unlimited";
+				  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, "change the time limit to", %arg1);
                   %clientsVoting++;
                }
             }
