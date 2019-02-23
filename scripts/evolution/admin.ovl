@@ -616,6 +616,22 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
 			}
 		 }
+	  case "ToggleTourneyNetClient":
+         if (%client.isAdmin)
+         {
+            if($Host::EnableNetTourneyClient)
+			{
+               $Host::EnableNetTourneyClient = 0;
+			   messageClient( %client, '', "Tournament Net Client checking has been disabled.~wfx/powered/vehicle_screen_on.wav" );
+			}
+            else
+            {
+               $Host::EnableNetTourneyClient = 1;
+			   messageClient( %client, '', "Tournament Net Client checking has been enabled.~wfx/powered/vehicle_screen_on.wav" );
+			   CheckVerObserverReset();
+			   ResetClientChangedTeams();
+            }
+         }
       case "switchCRCCheck":
          if($Host::EvoSuperAdminCRCCheck && (%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminCRCCheck)))
          {

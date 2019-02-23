@@ -1274,7 +1274,13 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 	  messageClient( %client, 'MsgVoteItem', "", %key, 'clearServerForMatch', 'clear the server', "Clear the Server" );
 	}
 
-      if($Host::EvoSuperAdminCRCCheck && (%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminCRCCheck)))
+    //Toggle Tournament Net Client
+	if(%client.isAdmin && $Host::EnableNetTourneyClient && $CurrentMissionType $= "CTF")
+		messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleTourneyNetClient', 'Disable Tournament Net Client', "Disable Tournament Net Client" );
+	else if(%client.isAdmin && $CurrentMissionType $= "CTF")
+		messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleTourneyNetClient', 'Enable Tournament Net Client', "Enable Tournament Net Client" );  
+	  
+	  if($Host::EvoSuperAdminCRCCheck && (%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminCRCCheck)))
 	{
          //if(!$CRCCountdownStarted)
          //{
