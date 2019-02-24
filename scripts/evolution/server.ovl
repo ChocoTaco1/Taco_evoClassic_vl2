@@ -1143,8 +1143,11 @@ function notifyMatchEnd(%time)
    
    if (%seconds > 1) {
       MessageAll('MsgMissionEnd', '\c2Match ends in %1 seconds.~wfx/misc/hunters_%1.wav', %seconds);
-		if (%seconds == 60) {
-			MessageAll('MsgNotifyEvoNextMission', '\c2Next Mission: \c3%1', $EvoCachedNextMission);
+		if (%seconds == 60) 
+		{
+			%ShowNextMissionVar = $EvoCachedNextMission;
+			if($Host::EvoTourneySameMap && $Host::TournamentMode) %ShowNextMissionVar = "Same Map";
+			MessageAll('MsgNotifyEvoNextMission', '\c2Next Mission: \c1%1', %ShowNextMissionVar);
 		}
    }
    else if (%seconds == 1)

@@ -509,7 +509,9 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
             else
             {
                %client.NextMission = 2;
-			   messageClient( %client, 'MsgVoteItem', 'Next Mission: %1', $EvoCachedNextMission );
+			   %ShowNextMissionVar = $EvoCachedNextMission;
+			   if($Host::EvoTourneySameMap && $Host::TournamentMode) %ShowNextMissionVar = "Same Map";
+			   messageClient( %client, 'MsgVoteItem', 'Next Mission: %1', %ShowNextMissionVar );
 			   messageClient( %client, '', "Now select the next mission to set, please." );
             }
          }
@@ -519,7 +521,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 			$EvoCachedNextMission = $SetNextMissionRestore;
 			$SetNextMissionRestore = "";
 			messageClient( %client, 'MsgVoteItem', 'Original Mission restored to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
-			adminLog(%client, " restored the original mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+			adminLog(%client, " restored the original mission to " @ $EvoCachedNextMission @ ".");
          }
 	  case "SetMissionMapSlot1":
 	     if (%client.isAdmin )
@@ -530,7 +532,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot1;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
-				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
 	  case "SetMissionMapSlot2":
@@ -542,7 +544,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot2;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
-				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
 	  case "SetMissionMapSlot3":
@@ -554,7 +556,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot3;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
-				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
 	  case "SetMissionMapSlot4":
@@ -566,7 +568,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot4;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
-				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
 	  case "SetMissionMapSlot5":
@@ -578,7 +580,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot5;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
-				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
 	  case "SetMissionMapSlot6":
@@ -590,7 +592,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot6;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
-				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
 	  case "SetMissionMapSlot7":
@@ -602,7 +604,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot7;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
-				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
 	  case "SetMissionMapSlot8":
@@ -614,7 +616,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot8;
 				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
-				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ " (" @ %arg2 @ ")");
+				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
 	  case "ToggleTourneyNetClient":
@@ -624,6 +626,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 			{
                $Host::EnableNetTourneyClient = 0;
 			   messageClient( %client, '', "Tournament Net Client checking has been disabled.~wfx/powered/vehicle_screen_on.wav" );
+			   adminLog(%client, " has disabled Net Tourney Client checking.");
 			}
             else
             {
@@ -631,6 +634,23 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 			   messageClient( %client, '', "Tournament Net Client checking has been enabled.~wfx/powered/vehicle_screen_on.wav" );
 			   CheckVerObserverReset();
 			   ResetClientChangedTeams();
+			   adminLog(%client, " has enabled Net Tourney Client checking.");
+            }
+         }
+	  case "TogglePUGpassword":
+         if (%client.isAdmin)
+         {
+            if($Host::Password !$= "")
+			{
+			   $Host::Password = "";
+			   messageClient( %client, '', "PUG password been disabled.~wfx/powered/vehicle_screen_on.wav" );
+			   adminLog(%client, " has enabled pug password." );
+			}
+            else
+            {
+			   $Host::Password = $Host::PUGPassword;
+			   messageClient( %client, '', "PUG password been enabled.~wfx/powered/vehicle_screen_on.wav" );
+			   adminLog(%client, " has disable pug password." );
             }
          }
       case "switchCRCCheck":
@@ -667,7 +687,9 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 	  case "showNextMission":
          if ( !%client.CantView )
 		 {
-            messageClient(%client, 'showNextMission', '\c2Next Mission: %1', $EvoCachedNextMission );
+			%ShowNextMissionVar = $EvoCachedNextMission;
+			if($Host::EvoTourneySameMap && $Host::TournamentMode) %ShowNextMissionVar = "Same Map";
+			MessageAll('MsgNotifyEvoNextMission', '\c2Next Mission: \c1%1', %ShowNextMissionVar);
 
             %client.cantView = true;
             %client.schedViewRules = schedule( 10000, %client, "resetViewSchedule", %client );

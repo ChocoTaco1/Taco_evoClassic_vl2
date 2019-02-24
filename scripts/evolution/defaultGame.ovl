@@ -1108,7 +1108,7 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
          return; // Display no further vote options
       }
    }
-   if (!$Host::TournamentMode && $CurrentMissionType $= "CTF" && $Host::EnableSetNextMission )
+   if ( $CurrentMissionType $= "CTF" && $Host::EnableSetNextMission && !$Host::TournamentMode )
    {  	  
 	  if (%client.NextMission > 0)
          %client.NextMission = %client.NextMission - 1;
@@ -1240,6 +1240,11 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
             messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeMission', 'change the mission to', 'Change the Mission');
             messageClient(%client, 'MsgVoteItem', "", %key, 'VoteFFAMode', 'Change server to Free For All.', 'Free For All Mode');
             messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeTimeLimit', 'change the time limit', 'Change the Time Limit');
+			
+			if($Host::Password !$= "")
+				messageClient(%client, 'MsgVoteItem', "", %key, 'TogglePUGpassword', 'Disable PUG Password', 'Disable PUG Password');
+			else
+				messageClient(%client, 'MsgVoteItem', "", %key, 'TogglePUGpassword', 'Enable PUG Password', 'Enable PUG Password');			
          }
          if(%multipleTeams)
          {
