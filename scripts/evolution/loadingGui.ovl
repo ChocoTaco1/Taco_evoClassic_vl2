@@ -25,6 +25,7 @@ function sendModInfoToClient(%client)
    %loadingmsgline1 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline1 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline1content;
    %loadingmsgline2 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline2 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline2content;
    %loadingmsgline3 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline3 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline3content;
+   %loadingmsgline4 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline4 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline4content;
 
 
    if($Host::EvoStats && (!$Host::TournamentMode || ($Host::TournamentMode && $Host::EvoStatsTourney)) && $Host::EvoStatsType != 0)
@@ -63,20 +64,20 @@ function sendModInfoToClient(%client)
    %SpecialCnt = 4;
    %SpecialTextLine[0] = %loadingmsgline1;
    %SpecialTextLine[1] = %loadingmsgline2;
-   %SpecialTextLine[2] = %net;
-   %SpecialTextLine[3] = %loadingmsgline3;
-   //%SpecialTextLine[4] = %nmis;
+   %SpecialTextLine[2] = %loadingmsgline3;
+   %SpecialTextLine[3] = %loadingmsgline4;
 
    %ServerCnt = 8;
    %ServerTextLine[0] = %time;
    %ServerTextLine[1] = %max;
-   %ServerTextLine[2] = %td;
+   %ServerTextLine[2] = %net;
    %ServerTextLine[3] = %smurf;
    %ServerTextLine[4] = %rapeppl;
    %ServerTextLine[5] = %turrets;
    %ServerTextLine[6] = %stats;
    %ServerTextLine[7] = %nmis;
    
+   //%serverTextLine[2] = %td;
    //%serverTextLine[3] = %crc;
    //%ServerTextLine[4] = %pure;
 
