@@ -1146,7 +1146,7 @@ function notifyMatchEnd(%time)
 		if (%seconds == 60) 
 		{
 			%ShowNextMissionVar = $EvoCachedNextMission;
-			if($Host::EvoTourneySameMap && $Host::TournamentMode) %ShowNextMissionVar = "Same Map";
+			if($Host::EvoTourneySameMap && $Host::TournamentMode) %ShowNextMissionVar = $CurrentMission;
 			MessageAll('MsgNotifyEvoNextMission', '\c2Next Mission: \c1%1', %ShowNextMissionVar);
 		}
    }

@@ -510,7 +510,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
             {
                %client.NextMission = 2;
 			   %ShowNextMissionVar = $EvoCachedNextMission;
-			   if($Host::EvoTourneySameMap && $Host::TournamentMode) %ShowNextMissionVar = "Same Map";
+			   if($Host::EvoTourneySameMap && $Host::TournamentMode) %ShowNextMissionVar = $CurrentMission;
 			   messageClient( %client, 'MsgVoteItem', 'Next Mission: %1', %ShowNextMissionVar );
 			   messageClient( %client, '', "Now select the next mission to set, please." );
             }
@@ -688,7 +688,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
          if ( !%client.CantView )
 		 {
 			%ShowNextMissionVar = $EvoCachedNextMission;
-			if($Host::EvoTourneySameMap && $Host::TournamentMode) %ShowNextMissionVar = "Same Map";
+			if($Host::EvoTourneySameMap && $Host::TournamentMode) %ShowNextMissionVar = $CurrentMission;
 			MessageAll('MsgNotifyEvoNextMission', '\c2Next Mission: \c1%1', %ShowNextMissionVar);
 
             %client.cantView = true;
