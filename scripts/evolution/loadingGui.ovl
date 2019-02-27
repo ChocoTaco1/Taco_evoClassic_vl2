@@ -12,42 +12,49 @@ function sendModInfoToClient(%client)
 		$ColorsafetynetRunonce = true;
    }
    
-   %time = "<color:" @ $Host::loadingmsgcolor1 @ ">Time limit: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::TimeLimit;
-   %max = "<color:" @ $Host::loadingmsgcolor1 @ ">Max players: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::MaxPlayers;
-   %td = "<color:" @ $Host::loadingmsgcolor1 @ ">Team damage: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::TeamDamageOn ? "On" : "Off");
-   %crc = "<color:" @ $Host::loadingmsgcolor1 @ ">CRC checking: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::CRCTextures ? "On" : "Off");
-   %pure = "<color:" @ $Host::loadingmsgcolor1 @ ">Pure server: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::PureServer ? "On" : "Off");
-   %smurf = "<color:" @ $Host::loadingmsgcolor1 @ ">Refuse smurfs: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::NoSmurfs ? "On" : "Off");
-   %random = "<color:" @ $Host::loadingmsgcolor1 @ ">Random teams: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($RandomTeams ? "On" : "Off");
-   %fair = "<color:" @ $Host::loadingmsgcolor1 @ ">Fair teams: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::ClassicFairTeams ? "On" : "Off");
-   %rape = "<color:" @ $Host::loadingmsgcolor1 @ ">No Base Rape: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::EvoNoBaseRapeEnabled ? "On" : "Off");
-   %net = "<color:" @ $Host::loadingmsgcolor1 @ ">Packets Rate / Size: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $pref::Net::PacketRateToClient @ " / " @ $pref::Net::PacketSize;
    %loadingmsgline1 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline1 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline1content;
    %loadingmsgline2 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline2 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline2content;
    %loadingmsgline3 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline3 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline3content;
    %loadingmsgline4 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline4 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline4content;
+   
+   %time = "<color:" @ $Host::loadingmsgcolor1 @ ">Time limit: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::TimeLimit;
+   %max = "<color:" @ $Host::loadingmsgcolor1 @ ">Max players: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::MaxPlayers;
+   %net = "<color:" @ $Host::loadingmsgcolor1 @ ">Packets Rate / Size: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $pref::Net::PacketRateToClient @ " / " @ $pref::Net::PacketSize;
+   %smurf = "<color:" @ $Host::loadingmsgcolor1 @ ">Refuse smurfs: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::NoSmurfs ? "On" : "Off");
 
+   
+   //%random = "<color:" @ $Host::loadingmsgcolor1 @ ">Random teams: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($RandomTeams ? "On" : "Off");
+   //%fair = "<color:" @ $Host::loadingmsgcolor1 @ ">Fair teams: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::ClassicFairTeams ? "On" : "Off");
+   //%rape = "<color:" @ $Host::loadingmsgcolor1 @ ">No Base Rape: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::EvoNoBaseRapeEnabled ? "On" : "Off");
+   //%td = "<color:" @ $Host::loadingmsgcolor1 @ ">Team damage: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::TeamDamageOn ? "On" : "Off");
+   //%crc = "<color:" @ $Host::loadingmsgcolor1 @ ">CRC checking: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::CRCTextures ? "On" : "Off");
+   //%pure = "<color:" @ $Host::loadingmsgcolor1 @ ">Pure server: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::PureServer ? "On" : "Off");
 
-   if($Host::EvoStats && (!$Host::TournamentMode || ($Host::TournamentMode && $Host::EvoStatsTourney)) && $Host::EvoStatsType != 0)
-      %stats = "<color:" @ $Host::loadingmsgcolor1 @ ">Stats based on: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::EvoStatsType == 1 ? "Kills" : "Damage");
 
    if($Host::EvoNoBaseRapeEnabled)
    	%rapeppl = "<color:" @ $Host::loadingmsgcolor1 @ ">Min No Base Rape: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::EvoNoBaseRapeClassicPlayerCount;
 
+   %turrets = "<color:" @ $Host::loadingmsgcolor1 @ ">Min Turrets: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::EnableTurretPlayerCount;
+   
+   if($Host::EvoStats && (!$Host::TournamentMode || ($Host::TournamentMode && $Host::EvoStatsTourney)) && $Host::EvoStatsType != 0)
+      %stats = "<color:" @ $Host::loadingmsgcolor1 @ ">Stats based on: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::EvoStatsType == 1 ? "Kills" : "Damage");
+	  
    if($Evo::ETMMode && $ETMmode::CurrentMap <= $ETMmode::Counter)
    {
-   	%nmis = "<color:" @ $Host::loadingmsgcolor1 @ ">Next mission: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $ETMmode::MapDisplayName[$ETMmode::CurrentMap];
+	  %nmis = "<color:" @ $Host::loadingmsgcolor1 @ ">Next mission: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $ETMmode::MapDisplayName[$ETMmode::CurrentMap];
    }
    else
    {
-       %nmis = "<color:" @ $Host::loadingmsgcolor1 @ ">Next mission: <color:" @ $Host::loadingmsgcolor2 @ ">" @ findNextCycleMission();
-       if ( $Host::ClassicRandomMissions )
-	 {
-	   %nmis = %nmis SPC "(Random)";
-	 }
+      %nmis = "<color:" @ $Host::loadingmsgcolor1 @ ">Next mission: <color:" @ $Host::loadingmsgcolor2 @ ">" @ findNextCycleMission();
+	  if ( $Host::ClassicRandomMissions )
+	  {
+		%nmis = %nmis SPC "(Random)";
+	  }
+	  if($Host::EvoTourneySameMap && $Host::TournamentMode)
+	  {
+		%nmis = "<color:" @ $Host::loadingmsgcolor1 @ ">Next mission: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $CurrentMission @ " (Same)";
+	  }
    }
-   %turrets = "<color:" @ $Host::loadingmsgcolor1 @ ">Min Turrets: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::EnableTurretPlayerCount;
-
    
 	// classic doesn't use a variable to print the version, it needs to be edited manually
    %modName = "";
@@ -80,6 +87,10 @@ function sendModInfoToClient(%client)
    //%serverTextLine[2] = %td;
    //%serverTextLine[3] = %crc;
    //%ServerTextLine[4] = %pure;
+   //%ServerTextLine[5] = %fair;
+   //%ServerTextLine[6] = %random;
+   //%ServerTextLine[7] = %rape;
+   
 
    %singlePlayer = $CurrentMissionType $= "SinglePlayer";
    //messageClient(%client, 'MsgLoadInfo', "", $CurrentMission, %modName, $Host::GameName);
