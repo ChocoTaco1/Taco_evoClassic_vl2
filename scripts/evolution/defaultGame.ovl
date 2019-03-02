@@ -975,10 +975,10 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
    }
 
    // add player/clan to the ban list
-   if( (%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminPermanentBan)) && %targetClient.guid != 0 && %outrankTarget)
-   {
-	PizzaTriconPopup( %client, %key, 'Add to Ban List', "addBanList", 17 );
-   }
+   //if( (%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminPermanentBan)) && %targetClient.guid != 0 && %outrankTarget)
+   //{
+	//PizzaTriconPopup( %client, %key, 'Add to Ban List', "addBanList", 17 );
+   //}
 
    //mute options
    if(!%isTargetSelf)
@@ -1020,10 +1020,10 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
 
       if(!%isTargetSelf && %outrankTarget)
       {
-         if( !%isTargetBot && %client.isSuperAdmin && $Host::EvoSuperAdminSuper)
-         {
-            PizzaTriconPopup( %client, %key, 'Make Super Admin', "SuperAdminPlayer", 19 );
-         }
+         //if( !%isTargetBot && %client.isSuperAdmin && $Host::EvoSuperAdminSuper)
+         //{
+         //   PizzaTriconPopup( %client, %key, 'Make Super Admin', "SuperAdminPlayer", 19 );
+         //}
 	 
          messageClient(%client, 'MsgPlayerPopupItem', "", %key, "KickPlayer", "", 'Kick', 3);
 
@@ -1036,15 +1036,29 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
             if(%client.isSuperAdmin || $Host::EvoAdminBan)
                messageClient(%client, 'MsgPlayerPopupItem', "", %key, "BanPlayer", "", 'Ban', 4);
 
-            if(!%isTargetObserver)
-               messageClient(%client, 'MsgPlayerPopupItem', "", %key, "ToObserver", "", 'Force observer', 5);
+            //if(!%isTargetObserver)
+               //messageClient(%client, 'MsgPlayerPopupItem', "", %key, "ToObserver", "", 'Force observer', 5);
 	    
-            if((($Host::EvoAdminWhois) || (%client.isSuperAdmin && $Host::EvoSuperAdminWhois)) && !(%targetClient.isSuperAdmin && $Host::EvoBlockSuperAdminWhois))
-            {
-               PizzaTriconPopup ( %client, %key, "WhoIS", "Whois", 16 );
-            }
-            messageClient( %client, 'MsgPlayerPopupItem', "", %key, "ExplodePlayer", "", 'Explode Player', 20);
-         }
+            //if((($Host::EvoAdminWhois) || (%client.isSuperAdmin && $Host::EvoSuperAdminWhois)) && !(%targetClient.isSuperAdmin && $Host::EvoBlockSuperAdminWhois))
+            //{
+            //   PizzaTriconPopup ( %client, %key, "WhoIS", "Whois", 16 );
+            //}
+              messageClient( %client, 'MsgPlayerPopupItem', "", %key, "PrintClientInfo", "", 'Client Info', 16 ); // z0dd - ZOD - MeBad, 7/13/03. Send client information.
+
+			  if ( %targetClient.isGagged )
+                  messageClient( %client, 'MsgPlayerPopupItem', "", %key, "UnGagPlayer", "", 'UnGag Player', 17);
+               else
+                  messageClient( %client, 'MsgPlayerPopupItem', "", %key, "GagPlayer", "", 'Gag Player', 17);
+
+               if ( %targetClient.isFroze )
+                  messageClient( %client, 'MsgPlayerPopupItem', "", %key, "ThawPlayer", "", 'Thaw Player', 18);
+               else
+                  messageClient( %client, 'MsgPlayerPopupItem', "", %key, "FreezePlayer", "", 'Freeze Player', 18);
+
+               PizzaTriconPopup ( %client, %key, "Boot to the Rear", "BootPlayer", 19 );
+			   //messageClient( %client, 'MsgPlayerPopupItem', "", %key, "BootPlayer", "", 'Boot to the Rear', 21);
+               messageClient( %client, 'MsgPlayerPopupItem', "", %key, "ExplodePlayer", "", 'Explode Player', 20);
+		}
       }
  
       if(%isTargetSelf || %outrankTarget)

@@ -1515,21 +1515,21 @@ function serverCmdWhois(%client, %target)
 
 // serverCmdMakePlayerSuperAdmin(%client, %target)
 // Info: Let Super Admins to Super Admin other players
-function serverCmdMakePlayerSuperAdmin(%client, %target)
-{
-   if(%client.isSuperAdmin && $Host::EvoSuperAdminSuper && !%target.isSuperAdmin && !%target.isAIControlled())
-   {
-      messageAll('MsgSuperAdminPlayer', '\c2%3 made %2 a Super Admin.', %target, %target.name, %client.name);
-      %target.isAdmin = true;
-      %target.isSuperAdmin = true;
-      if ( %target.pizza )
-      {
-         pizzaSendHudUpdate( %game, %target, "" );
-      }
-      %authInfo = %target.getAuthInfo();
-      adminLog(%client, " made " @ %target.nameBase @ "( " @ getField(%authInfo, 0) @ ", " @ getField(%authInfo, 1) @ ", " @ %target.guid @ ", " @ %target.getAddress() @ ") a Super Admin.");
-   }
-}
+//function serverCmdMakePlayerSuperAdmin(%client, %target)
+//{
+//   if(%client.isSuperAdmin && $Host::EvoSuperAdminSuper && !%target.isSuperAdmin && !%target.isAIControlled())
+//   {
+//      messageAll('MsgSuperAdminPlayer', '\c2%3 made %2 a Super Admin.', %target, %target.name, %client.name);
+//      %target.isAdmin = true;
+//      %target.isSuperAdmin = true;
+//      if ( %target.pizza )
+//      {
+//         pizzaSendHudUpdate( %game, %target, "" );
+//      }
+//      %authInfo = %target.getAuthInfo();
+//      adminLog(%client, " made " @ %target.nameBase @ "( " @ getField(%authInfo, 0) @ ", " @ getField(%authInfo, 1) @ ", " @ %target.guid @ ", " @ %target.getAddress() @ ") a Super Admin.");
+//   }
+//}
 
 // * PIZZA CLIENT OPTIONS *
 // serverCmdRegisterPizzaClient(%client)

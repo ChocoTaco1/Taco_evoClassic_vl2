@@ -59,50 +59,50 @@ function cmdAutoKickObserver(%client, %key) // Edit GG
 
 // serverCmdAddToBanList(%client, %target)
 // Info: Add the player to the ban list
-function serverCmdAddToBanList(%client, %target)
-{
-   if(%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminPermanentBan))
-   {
-      // an admin can not be banned
-      if(%target.isAdmin)
-      {
-         messageClient(%client, '', 'You can\'t ban an admin!');
-         return;
-      }
-      if(%target.guid $= "")
-         return;
-
-      // get infos of the player to kick
-      %authInfo = %target.getAuthInfo();
-      %banRowCount = 0;
-
-      // read the file
-      %read = new fileObject();
-      %read.openForRead( $Host::EvoBanListFile );
-      while(!%read.isEOF())
-         %banRow[%banRowCount++] = %read.readLine();
-
-      %read.close();
-      %read.delete();
-
-      // append the new line to the file
-      %write = new fileObject();
-      %write.openForWrite( $Host::EvoBanListFile );
-      for(%x = 1; %x <= %banRowCount; %x++)
-         %write.writeLine(%banRow[%x]);
-
-      %write.writeLine("$EvoBanPlayer[$EvoBanPlayerCount++] = \"" @ getField(%authInfo, 0) SPC %target.guid @ "\";");
-      %write.close();
-      %write.delete();
-
-      // exec the new file (so server can load the new variables)
-      exec( $Host::EvoBanListFile );
-
-      // ban the target
-      ban(%target, %client);
-      adminLog(%client, " banned " @ %target.nameBase @ " (" @ getField(%authInfo, 0) @ ", " @ getField(%authInfo, 1) @ ", " @ %target.guid @ ", " @ %target.getAddress() @ ")");
-   }
-}
+//function serverCmdAddToBanList(%client, %target)
+//{
+//   if(%client.isSuperAdmin || (%client.isAdmin && $Host::EvoAdminPermanentBan))
+//   {
+//      // an admin can not be banned
+//      if(%target.isAdmin)
+//      {
+//         messageClient(%client, '', 'You can\'t ban an admin!');
+//         return;
+//      }
+//      if(%target.guid $= "")
+//         return;
+//
+//      // get infos of the player to kick
+//      %authInfo = %target.getAuthInfo();
+//      %banRowCount = 0;
+//
+//      // read the file
+//      %read = new fileObject();
+//      %read.openForRead( $Host::EvoBanListFile );
+//      while(!%read.isEOF())
+//         %banRow[%banRowCount++] = %read.readLine();
+//
+//      %read.close();
+//      %read.delete();
+//
+//      // append the new line to the file
+//      %write = new fileObject();
+//      %write.openForWrite( $Host::EvoBanListFile );
+//      for(%x = 1; %x <= %banRowCount; %x++)
+//         %write.writeLine(%banRow[%x]);
+//
+//      %write.writeLine("$EvoBanPlayer[$EvoBanPlayerCount++] = \"" @ getField(%authInfo, 0) SPC %target.guid @ "\";");
+//      %write.close();
+//      %write.delete();
+//
+//      // exec the new file (so server can load the new variables)
+//      exec( $Host::EvoBanListFile );
+//
+//      // ban the target
+//      ban(%target, %client);
+//      adminLog(%client, " banned " @ %target.nameBase @ " (" @ getField(%authInfo, 0) @ ", " @ getField(%authInfo, 1) @ ", " @ %target.guid @ ", " @ %target.getAddress() @ ")");
+//   }
+//}
 
 // serverCmdAddClanToBanList(%client, %target)
 // Info: Add the player's clan to the ban list
