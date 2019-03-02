@@ -1027,8 +1027,8 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
 	 
          messageClient(%client, 'MsgPlayerPopupItem', "", %key, "KickPlayer", "", 'Kick', 3);
 
-         if(!%isTargetBot)
-         {
+         //if(!%isTargetBot)
+         //{
             messageClient(%client, 'MsgPlayerPopupItem', "", %key, "Warn", "", 'Warn player', 13);
             if(%isTargetAdmin)
                messageClient(%client, 'MsgPlayerPopupItem', "", %key, "StripAdmin", "", 'Strip admin', 14);
@@ -1045,20 +1045,19 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
             //}
               messageClient( %client, 'MsgPlayerPopupItem', "", %key, "PrintClientInfo", "", 'Client Info', 16 ); // z0dd - ZOD - MeBad, 7/13/03. Send client information.
 
-			  if ( %targetClient.isGagged )
+			  if ( !%isTargetSelf && %targetClient.isGagged )
                   messageClient( %client, 'MsgPlayerPopupItem', "", %key, "UnGagPlayer", "", 'UnGag Player', 17);
-               else
+              else
                   messageClient( %client, 'MsgPlayerPopupItem', "", %key, "GagPlayer", "", 'Gag Player', 17);
 
-               if ( %targetClient.isFroze )
+              if ( %targetClient.isFroze )
                   messageClient( %client, 'MsgPlayerPopupItem', "", %key, "ThawPlayer", "", 'Thaw Player', 18);
-               else
+              else
                   messageClient( %client, 'MsgPlayerPopupItem', "", %key, "FreezePlayer", "", 'Freeze Player', 18);
 
-               PizzaTriconPopup ( %client, %key, "Boot to the Rear", "BootPlayer", 19 );
-			   //messageClient( %client, 'MsgPlayerPopupItem', "", %key, "BootPlayer", "", 'Boot to the Rear', 21);
+			   messageClient( %client, 'MsgPlayerPopupItem', "", %key, "BootPlayer", "", 'Boot to the Rear', 19);
                messageClient( %client, 'MsgPlayerPopupItem', "", %key, "ExplodePlayer", "", 'Explode Player', 20);
-		}
+		 //}
       }
  
       if(%isTargetSelf || %outrankTarget)
@@ -1154,6 +1153,10 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot1', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot1 );
 			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot2', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot2 );
 			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot3', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot3 );
+			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot4', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot4 );
+			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot5', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot5 );
+			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot6', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot6 );
+			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot7', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot7 );
 			if($SetNextMissionRestore !$= "")
 			messageClient(%client, 'MsgVoteItem', "", %key, 'SetNextMissionRestore', 'Restore Original Mission', "Restore Original Mission");
 			messageClient(%client, 'MsgVoteItem', "", %key, 'NextMission', 'Cancel Set Next Mission', "Cancel 'Set Next Mission...'");
