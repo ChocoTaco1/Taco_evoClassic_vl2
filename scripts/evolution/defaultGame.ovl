@@ -1036,8 +1036,8 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
             if(%client.isSuperAdmin || $Host::EvoAdminBan)
                messageClient(%client, 'MsgPlayerPopupItem', "", %key, "BanPlayer", "", 'Ban', 4);
 
-            //if(!%isTargetObserver)
-               //messageClient(%client, 'MsgPlayerPopupItem', "", %key, "ToObserver", "", 'Force observer', 5);
+            if(!%isTargetObserver)
+               messageClient(%client, 'MsgPlayerPopupItem', "", %key, "ToObserver", "", 'Force observer', 5);
 	    
             //if((($Host::EvoAdminWhois) || (%client.isSuperAdmin && $Host::EvoSuperAdminWhois)) && !(%targetClient.isSuperAdmin && $Host::EvoBlockSuperAdminWhois))
             //{
@@ -1045,7 +1045,7 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
             //}
               messageClient( %client, 'MsgPlayerPopupItem', "", %key, "PrintClientInfo", "", 'Client Info', 16 ); // z0dd - ZOD - MeBad, 7/13/03. Send client information.
 
-			  if ( !%isTargetSelf && %targetClient.isGagged )
+			  if ( %targetClient.isGagged )
                   messageClient( %client, 'MsgPlayerPopupItem', "", %key, "UnGagPlayer", "", 'UnGag Player', 17);
               else
                   messageClient( %client, 'MsgPlayerPopupItem', "", %key, "GagPlayer", "", 'Gag Player', 17);
@@ -1081,7 +1081,8 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
 
                messageClient(%client, 'MsgPlayerPopupItem', "", %key, "ChangeTeam", "", %str, %caseId);
                // z0dd - ZOD, 7/11/03. Allow Super admins to force themselves to obs.
-               messageClient( %client, 'MsgPlayerPopupItem', "", %key, "ToObserver", "", 'Force observer', 5 );
+               if(%isTargetSelf)
+					messageClient( %client, 'MsgPlayerPopupItem', "", %key, "ToObserver", "", 'Force observer', 5 );
             }
          }
          else if(%isTargetObserver)
