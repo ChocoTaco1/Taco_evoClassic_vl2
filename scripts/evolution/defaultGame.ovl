@@ -1285,9 +1285,9 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
          }
 		 
 		 //Toggle Tournament Net Client
-		 if(%client.isAdmin && $Host::EnableNetTourneyClient && $CurrentMissionType $= "CTF")
+		 if(%client.isAdmin && $Host::EnableNetTourneyClient)
 			messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleTourneyNetClient', 'Disable Tournament Net Client', "Disable Tournament Net Client" );
-		 else if(%client.isAdmin && $CurrentMissionType $= "CTF")
+		 else if(%client.isAdmin)
 			messageClient( %client, 'MsgVoteItem', "", %key, 'ToggleTourneyNetClient', 'Enable Tournament Net Client', "Enable Tournament Net Client" );
 		 
       }
