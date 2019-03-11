@@ -1134,35 +1134,21 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 		else
 			return;
 		
-		if($CurrentMissionType $= "CTF")
+		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot1', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot1 );
+		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot2', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot2 );
+		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot3', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot3 );
+		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot4', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot4 );
+		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot5', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot5 );
+		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot6', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot6 );
+		if( $CurrentMissionType !$= "DM" )
 		{
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot1', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot1 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot2', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot2 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot3', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot3 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot4', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot4 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot5', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot5 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot6', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot6 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot7', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot7 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot8', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot8 );
-			if($SetNextMissionRestore !$= "")
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetNextMissionRestore', 'Restore Original Mission', "Restore Original Mission");
-			messageClient(%client, 'MsgVoteItem', "", %key, 'NextMission', 'Cancel Set Next Mission', "Cancel 'Set Next Mission...'");
-			return; // Display no further vote options
+		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot7', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot7 );
+		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot8', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot8 );
 		}
-		else
-		{
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot1', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot1 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot2', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot2 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot3', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot3 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot4', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot4 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot5', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot5 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot6', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot6 );
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot7', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot7 );
-			if($SetNextMissionRestore !$= "")
-			messageClient(%client, 'MsgVoteItem', "", %key, 'SetNextMissionRestore', 'Restore Original Mission', "Restore Original Mission");
-			messageClient(%client, 'MsgVoteItem', "", %key, 'NextMission', 'Cancel Set Next Mission', "Cancel 'Set Next Mission...'");
-			return; // Display no further vote options
-		}
+		if($SetNextMissionRestore !$= "")
+		messageClient(%client, 'MsgVoteItem', "", %key, 'SetNextMissionRestore', 'Restore Original Mission', "Restore Original Mission");
+		messageClient(%client, 'MsgVoteItem', "", %key, 'NextMission', 'Cancel Set Next Mission', "Cancel 'Set Next Mission...'");
+		return; // Display no further vote options
       }
    }
    // TEAM OPTIONS
@@ -1249,7 +1235,7 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 
             if( $Host::EvoForcedVotes )
                messageClient(%client, 'MsgVoteItem', "", %key, 'ForceVote', 'Vote to ...', 'Vote to ...');
-			if( $Host::EnableSetNextMission && ($CurrentMissionType $= "CTF" || $CurrentMissionType $= "LakRabbit") && $GetRandomMapsLoaded )
+			if( $Host::EnableSetNextMission && $GetRandomMapsLoaded )
 				messageClient(%client, 'MsgVoteItem', "", %key, 'NextMission', 'Set Next Mission (Random)...', 'Set Next Mission (Random)...');
          }
          else
