@@ -1140,11 +1140,8 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot4', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot4 );
 		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot5', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot5 );
 		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot6', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot6 );
-		if( $CurrentMissionType !$= "DM" )
-		{
 		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot7', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot7 );
 		messageClient(%client, 'MsgVoteItem', "", %key, 'SetMissionMapSlot8', 'Set next mission to %1', 'Set next mission to %1', $SetNextMissionMapSlot8 );
-		}
 		if($SetNextMissionRestore !$= "")
 		messageClient(%client, 'MsgVoteItem', "", %key, 'SetNextMissionRestore', 'Restore Original Mission', "Restore Original Mission");
 		messageClient(%client, 'MsgVoteItem', "", %key, 'NextMission', 'Cancel Set Next Mission', "Cancel 'Set Next Mission...'");
