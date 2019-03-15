@@ -1115,7 +1115,8 @@ function DefaultGame::sendGameVoteMenu(%game, %client, %key)
 
       if (%client.ForceVote > 0)
       {
-         messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeMission', 'change the mission to', 'Vote to Change the Mission');
+         messageClient(%client, 'MsgVoteItem', "", %key, 'VoteTournamentMode', 'change server to Tournament.', 'Vote Tournament Mode');         
+		 messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeMission', 'change the mission to', 'Vote to Change the Mission');
 		 messageClient(%client, 'MsgVoteItem', "", %key, 'VoteSkipMission', 'skip the mission to', 'Vote to Skip Mission' );
          messageClient(%client, 'MsgVoteItem', "", %key, 'VoteChangeTimeLimit', 'change the time limit', 'Vote to Change the Time Limit');
          messageClient(%client, 'MsgVoteItem',"", %key, 'ForceVote', 'Cancel Force Vote', "Cancel 'Vote To...'");
@@ -1453,6 +1454,47 @@ function DefaultGame::voteChangeMission(%game, %admin, %missionDisplayName, %typ
    }
 }
 
+function DefaultGame::voteTournamentMode( %game, %admin, %missionDisplayName, %typeDisplayName, %missionId, %missionTypeId )
+{
+   %mission = $HostMissionFile[%missionId];
+   if ( %mission $= "" )
+   {
+      error( "Invalid mission index passed to DefaultGame::voteTournamentMode!" );
+      return;
+   }
+
+   %missionType = $HostTypeName[%missionTypeId];
+   if ( %missionType $= "" )
+   {
+      error( "Invalid mission type id passed to DefaultGame::voteTournamentMode!" );
+      return;
+   }
+
+   %cause = "";
+   if (%admin) 
+   {
+      messageAll( 'MsgAdminForce', '\c2The Admin %2 has switched the server to Tournament mode (%1).', %missionDisplayName, $AdminCl.name );
+      setModeTournament( %mission, %missionType );
+      %cause = "(admin)";
+   }
+   else 
+   {
+      %totalVotes = %game.totalVotesFor + %game.totalVotesAgainst;
+      // Added people who dont vote into the equation, now if you do not vote, it doesn't count as a no. - z0dd - ZOD
+      if(%totalVotes > 0 && (%game.totalVotesFor / (ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone)) > ($Host::VotePasspercent / 100))  
+      {
+         messageAll('MsgVotePassed', '\c2Server switched to Tournament mode by vote (%1): %2 percent.', %missionDisplayName, mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100)); 
+         setModeTournament( %mission, %missionType );
+         %cause = "(vote)";
+      }
+      else
+		 ResetVOall(%game);
+         messageAll('MsgVoteFailed', '\c2Tournament mode vote did not pass: %1 percent.', mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100));
+   }
+   if(%cause !$= "")
+      logEcho($AdminCl.nameBase @ ": tournament mode set "@%cause, 1);
+}
+
 function DefaultGame::voteFFA2Mode(%game, %admin, %missionDisplayName, %typeDisplayName, %missionId, %missionTypeId)
 {
    %mission = $HostMissionFile[%missionId];
@@ -1468,7 +1510,6 @@ function DefaultGame::voteFFA2Mode(%game, %admin, %missionDisplayName, %typeDisp
    {
       messageAll('MsgAdminForce', '\c2The Admin has switched the server to Free For All mode.');   
       setModeFFA(%mission, %missionType); 
-	  ResetVOall(%game);
    }
    else 
    {
@@ -1478,10 +1519,8 @@ function DefaultGame::voteFFA2Mode(%game, %admin, %missionDisplayName, %typeDisp
       {
          messageAll('MsgVotePassed', '\c2Server switched to Free For All mode by vote.'); 
          setModeFFA(%mission, %missionType); 
-		 ResetVOall(%game);
       }
       else 
-		 ResetVOall(%game);
          messageAll('MsgVoteFailed', '\c2Free For All mode vote did not pass: %1 percent.', mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100)); 
    }
 }
@@ -1495,7 +1534,6 @@ function DefaultGame::voteFFAMode( %game, %admin, %client )
       messageAll('MsgAdminForce', '\c2The Admin has switched the server to Free For All mode.', %client);
       setModeFFA( findNextCycleMission(), $CurrentMissionType);
       %cause = "(admin)";
-	  ResetVOall(%game);
    }
    else
    {
@@ -1507,10 +1545,8 @@ function DefaultGame::voteFFAMode( %game, %admin, %client )
          messageAll('MsgVotePassed', '\c2Server switched to Free For All mode by vote.', %client);
          setModeFFA( findNextCycleMission(), $CurrentMissionType);
          %cause = "(vote)";
-		 ResetVOall(%game);
       }
       else {
-         ResetVOall(%game);
 		 messageAll('MsgVoteFailed', '\c2Free For All mode vote did not pass: %1 percent.', mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100));
 	  }
    }

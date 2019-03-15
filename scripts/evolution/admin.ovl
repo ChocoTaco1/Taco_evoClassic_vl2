@@ -229,10 +229,6 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
-			$VoteSoundInProgress = true;
-			%VoteSoundRandom = getRandom(1,100);
-			$VoteSoundRandom = %VoteSoundRandom;
-			schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
          }
 
       case "VoteFFA2Mode": // allow players to choose the mission
@@ -266,19 +262,15 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
-			$VoteSoundInProgress = true;
-			%VoteSoundRandom = getRandom(1,100);
-			$VoteSoundRandom = %VoteSoundRandom;
-			schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
          }
 
       case "VoteTournamentMode":
-         if(%isAdmin)
+         if(%isAdmin && !%client.ForceVote)
          {
             adminStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4);
             adminLog(%client, " changed the server to Tournament Mode " @ %arg1 @ " (" @ %arg2 @ ")");
          }
-         else if(!$Host::TournamentMode && $Host::EvoAllowPlayerVoteTournamentMode)
+         else if(!$Host::TournamentMode)
          {
             if(getAdmin() == 0)
             {
@@ -300,6 +292,10 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
+			$VoteSoundInProgress = true;
+			%VoteSoundRandom = getRandom(1,100);
+			$VoteSoundRandom = %VoteSoundRandom;
+			schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
          }
 
       case "VoteMatchStart":
@@ -1248,3 +1244,4 @@ function serverCmdExplodePlayer(%client, %who)
       }	
    }
 }
+
