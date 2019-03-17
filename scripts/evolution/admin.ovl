@@ -685,7 +685,8 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 		 {
 			%ShowNextMissionVar = $EvoCachedNextMission;
 			if($Host::EvoTourneySameMap && $Host::TournamentMode) %ShowNextMissionVar = $CurrentMission @ " (Same)";
-			MessageAll('MsgNotifyEvoNextMission', '\c2Next Mission: \c1%1', %ShowNextMissionVar);
+			//MessageAll('MsgNotifyEvoNextMission', '\c2Next Mission: \c1%1', %ShowNextMissionVar);
+			messageClient(%client, 'MsgNotifyEvoNextMission', '\c2Next Mission: \c1%1', %ShowNextMissionVar);
 
             %client.cantView = true;
             %client.schedViewRules = schedule( 10000, %client, "resetViewSchedule", %client );
