@@ -17,7 +17,9 @@ function sendModInfoToClient(%client)
    %loadingmsgline3 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline3 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline3content;
    %loadingmsgline4 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline4 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline4content;
    
-   %time = "<color:" @ $Host::loadingmsgcolor1 @ ">Time limit: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::TimeLimit;
+   if($Host::TimeLimit $= "999" || $Host::TimeLimit $= "unlimited") %timeloadingvar = "Unlimited"; else %timeloadingvar = $Host::TimeLimit;
+   
+   %time = "<color:" @ $Host::loadingmsgcolor1 @ ">Time limit: <color:" @ $Host::loadingmsgcolor2 @ ">" @ %timeloadingvar;
    %max = "<color:" @ $Host::loadingmsgcolor1 @ ">Max players: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::MaxPlayers;
    %net = "<color:" @ $Host::loadingmsgcolor1 @ ">Packets Rate / Size: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $pref::Net::PacketRateToClient @ " / " @ $pref::Net::PacketSize;
    %smurf = "<color:" @ $Host::loadingmsgcolor1 @ ">Refuse smurfs: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::NoSmurfs ? "On" : "Off");
