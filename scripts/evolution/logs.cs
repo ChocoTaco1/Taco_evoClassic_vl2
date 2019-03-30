@@ -70,8 +70,8 @@ function connectLog(%client)
       %authInfo = %client.getAuthInfo();
 
       // connect info
-	  $logplayercount = $AllPlayerCount + 1;
-      $ConnectLog = formatTimeString("d-M-yy") SPC formatTimeString("[HH:nn]") SPC %client.nameBase @ " (" @ getField(%authInfo, 0) @ ", " @ getField(%authInfo, 1) @ ", " @ %client.guid @ ", " @ %client.getAddress() @ ") " @ "TotPop: " @ $logplayercount;
+	  %ConnectLogPlayerCount = $AllPlayerCount + 1; //Add one because its before a getcounts update.
+	  $ConnectLog = formatTimeString("d-M-yy") SPC formatTimeString("[HH:nn]") SPC %client.nameBase SPC "(" @ getField(%authInfo, 0) @ "," SPC %client.guid @ "," SPC %client.getAddress() @ ")" SPC "Pop[" @ %ConnectLogPlayerCount @ "]" SPC "Map[" @ $CurrentMission @ "]";
 
       // log the message
       if($Host::EvoDailyLogs)
