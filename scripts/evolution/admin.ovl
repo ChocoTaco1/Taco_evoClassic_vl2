@@ -369,13 +369,13 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                messageClient(%client, 'voteAlreadyRunning', '\c2A vote is already in progress.');
                return;
             }
-            for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
+            if(%arg1 $= "999") %time = "unlimited"; else %time = %arg1;
+			for(%idx = 0; %idx < ClientGroup.getCount(); %idx++)
             {
                %cl = ClientGroup.getObject(%idx);
                if(!%cl.isAIControlled())
                {
-                  if(%arg1 $= "999") %arg1 = "unlimited";
-				  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, "change the time limit to", %arg1);
+				  messageClient(%cl, 'VoteStarted', '\c2%1 initiated a vote to %2 %3.', %client.name, "change the time limit to", %time);
                   %clientsVoting++;
                }
             }
