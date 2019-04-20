@@ -516,7 +516,20 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
          {
 			$EvoCachedNextMission = $SetNextMissionRestore;
 			$SetNextMissionRestore = "";
-			messageClient( %client, 'MsgVoteItem', 'Original Mission restored to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+							
+			for(%idx = 0; %idx < ClientGroup.getCount(); %idx++) 
+			{
+				%cl = ClientGroup.getObject(%idx);
+					  
+				if(%cl.isAdmin)
+				{ 
+					if(%cl == %client)
+						messageClient( %cl, 'MsgVoteItem', 'Original Mission restored to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+					else
+						messageClient( %cl, 'MsgVoteItem', '%1 restored the Original Mission to %2.~wfx/powered/vehicle_screen_on.wav', %client.name, $EvoCachedNextMission );
+				}
+			}
+				
 			adminLog(%client, " restored the original mission to " @ $EvoCachedNextMission @ ".");
          }
 	  case "SetMissionMapSlot1":
@@ -527,7 +540,20 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 				if( $SetNextMissionRestore $= "")
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot1;
-				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				
+				for(%idx = 0; %idx < ClientGroup.getCount(); %idx++) 
+				{
+					%cl = ClientGroup.getObject(%idx);
+					  
+					if(%cl.isAdmin)
+					{ 
+						if(%cl == %client)
+							messageClient( %cl, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+						else
+							messageClient( %cl, 'MsgVoteItem', '%1 set the Next Mission to %2.~wfx/powered/vehicle_screen_on.wav', %client.name, $EvoCachedNextMission );
+					}
+				}
+				
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
@@ -539,7 +565,20 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 				if( $SetNextMissionRestore $= "")
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot2;
-				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				
+				for(%idx = 0; %idx < ClientGroup.getCount(); %idx++) 
+				{
+					%cl = ClientGroup.getObject(%idx);
+					  
+					if(%cl.isAdmin)
+					{ 
+						if(%cl == %client)
+							messageClient( %cl, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+						else
+							messageClient( %cl, 'MsgVoteItem', '%1 set the Next Mission to %2.~wfx/powered/vehicle_screen_on.wav', %client.name, $EvoCachedNextMission );
+					}
+				}
+				
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
@@ -551,7 +590,20 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 				if( $SetNextMissionRestore $= "")
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot3;
-				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				
+				for(%idx = 0; %idx < ClientGroup.getCount(); %idx++) 
+				{
+					%cl = ClientGroup.getObject(%idx);
+					  
+					if(%cl.isAdmin)
+					{ 
+						if(%cl == %client)
+							messageClient( %cl, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+						else
+							messageClient( %cl, 'MsgVoteItem', '%1 set the Next Mission to %2.~wfx/powered/vehicle_screen_on.wav', %client.name, $EvoCachedNextMission );
+					}
+				}
+				
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
@@ -563,7 +615,20 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 				if( $SetNextMissionRestore $= "")
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot4;
-				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				
+				for(%idx = 0; %idx < ClientGroup.getCount(); %idx++) 
+				{
+					%cl = ClientGroup.getObject(%idx);
+					  
+					if(%cl.isAdmin)
+					{ 
+						if(%cl == %client)
+							messageClient( %cl, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+						else
+							messageClient( %cl, 'MsgVoteItem', '%1 set the Next Mission to %2.~wfx/powered/vehicle_screen_on.wav', %client.name, $EvoCachedNextMission );
+					}
+				}
+				
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
@@ -575,7 +640,20 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 				if( $SetNextMissionRestore $= "")
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot5;
-				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				
+				for(%idx = 0; %idx < ClientGroup.getCount(); %idx++) 
+				{
+					%cl = ClientGroup.getObject(%idx);
+					  
+					if(%cl.isAdmin)
+					{ 
+						if(%cl == %client)
+							messageClient( %cl, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+						else
+							messageClient( %cl, 'MsgVoteItem', '%1 set the Next Mission to %2.~wfx/powered/vehicle_screen_on.wav', %client.name, $EvoCachedNextMission );
+					}
+				}
+				
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
@@ -587,7 +665,20 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 				if( $SetNextMissionRestore $= "")
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot6;
-				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				
+				for(%idx = 0; %idx < ClientGroup.getCount(); %idx++) 
+				{
+					%cl = ClientGroup.getObject(%idx);
+					  
+					if(%cl.isAdmin)
+					{ 
+						if(%cl == %client)
+							messageClient( %cl, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+						else
+							messageClient( %cl, 'MsgVoteItem', '%1 set the Next Mission to %2.~wfx/powered/vehicle_screen_on.wav', %client.name, $EvoCachedNextMission );
+					}
+				}
+				
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
@@ -599,7 +690,20 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 				if( $SetNextMissionRestore $= "")
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot7;
-				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				
+				for(%idx = 0; %idx < ClientGroup.getCount(); %idx++) 
+				{
+					%cl = ClientGroup.getObject(%idx);
+					  
+					if(%cl.isAdmin)
+					{ 
+						if(%cl == %client)
+							messageClient( %cl, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+						else
+							messageClient( %cl, 'MsgVoteItem', '%1 set the Next Mission to %2.~wfx/powered/vehicle_screen_on.wav', %client.name, $EvoCachedNextMission );
+					}
+				}
+				
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
@@ -611,7 +715,20 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 				if( $SetNextMissionRestore $= "")
 					$SetNextMissionRestore = $EvoCachedNextMission;
 				$EvoCachedNextMission = $SetNextMissionMapSlot8;
-				messageClient( %client, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+				
+				for(%idx = 0; %idx < ClientGroup.getCount(); %idx++) 
+				{
+					%cl = ClientGroup.getObject(%idx);
+					  
+					if(%cl.isAdmin)
+					{ 
+						if(%cl == %client)
+							messageClient( %cl, 'MsgVoteItem', 'Next Mission was set to %1.~wfx/powered/vehicle_screen_on.wav', $EvoCachedNextMission );
+						else
+							messageClient( %cl, 'MsgVoteItem', '%1 set the Next Mission to %2.~wfx/powered/vehicle_screen_on.wav', %client.name, $EvoCachedNextMission );
+					}
+				}
+				
 				adminLog(%client, " set the next mission to " @ $EvoCachedNextMission @ ".");
 			}
 		 }
