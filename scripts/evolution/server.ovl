@@ -287,19 +287,21 @@ function GameConnection::onDrop(%client, %reason)
 	//}
    //}
    // Reset the server if everyone has left the game
-   if((($HostGamePlayerCount - $HostGameBotCount) == 0) && $Host::Dedicated && !$resettingServer && !$LoadingMission)
+   
+   if( $HostGamePlayerCount - $HostGameBotCount == 0 && $Host::EmptyServerReset && !$resettingServer && !$LoadingMission && !$TimedServerResetActive && $CurrentMissionType !$= $Host::MissionType )
    {
       if($Evo::ETMMode)
 	{
 	   $Evo::ETMMode = false;
 	   ETMreset();
-	}     
-      schedule(10, 0, "resetServerDefaults");
-	// Instead of simply resetting the defaults, reinitialize the
-	// entire server...
-	// ReallyQuit();
-   }
+	}  
 	
+	%resettime = $Host::EmptyServerResetTime * 60000;
+	schedule(%resettime, 0, "ResetServerTimed");
+	$TimedServerResetActive = true;
+	error(formatTimeString("HH:nn:ss") SPC "Timed Server Reset schedule started..." );
+	
+   }
 }
 
 // loadMission( %missionName, %missionType, %firstMission )
