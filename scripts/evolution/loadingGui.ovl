@@ -9,6 +9,7 @@ function sendModInfoToClient(%client)
 		if( $Host::loadingmsgcolor1 $= "" ) $Host::loadingmsgcolor1 = "05edad";
 		if( $Host::loadingmsgcolor2 $= "" ) $Host::loadingmsgcolor2 = "29DEE7";
 		if( $Host::loadingmsgcolor3 $= "" ) $Host::loadingmsgcolor3 = "33CCCC";
+		if( $Host::Info !$= "" ) 			$Host::Info = " ";
 		$ColorsafetynetRunonce = true;
    }
    
