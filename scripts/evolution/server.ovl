@@ -1026,6 +1026,9 @@ function serverCmdClientJoinTeam(%client, %team, %admin)
                Game.AIChangeTeam(%client, %team);
             else
                Game.clientChangeTeam(%client, %team, %fromObs);
+			   		   
+		    if( %admin !$= %client )
+				adminLog(%admin, " forced " @ %client.nameBase @ " to the another team.");
          }
          else
          {
