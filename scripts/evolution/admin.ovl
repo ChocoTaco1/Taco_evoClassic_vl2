@@ -738,14 +738,24 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
             if($Host::EnableNetTourneyClient)
 			{
                $Host::EnableNetTourneyClient = 0;
+			   
+			   if(isActivePackage(checkver))
+					deactivatePackage(checkver);
+			   
 			   messageClient( %client, '', "Tournament Net Client checking has been disabled.~wfx/powered/vehicle_screen_on.wav" );
 			   adminLog(%client, " has disabled Net Tourney Client checking.");
 			}
             else
             {
                $Host::EnableNetTourneyClient = 1;
+			   
+			   if(!isActivePackage(checkver))
+					activatePackage(checkver);
+			   
+			   //Boot Offenders into Obs
+			   CheckVerObserver(%client);
+			   
 			   messageClient( %client, '', "Tournament Net Client checking has been enabled.~wfx/powered/vehicle_screen_on.wav" );
-			   CheckVerObserverReset();
 			   ResetClientChangedTeams();
 			   adminLog(%client, " has enabled Net Tourney Client checking.");
             }
