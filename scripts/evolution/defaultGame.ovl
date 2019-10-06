@@ -35,15 +35,7 @@ function DefaultGame::gameOver(%game)
          ETMreset();
       }
       $ETMCMapUpdated = "";
-   }
-   
-	ResetNBRNotify(); //Reset NoBaseRape Notify
-	ResetTeamBalanceNotifyGameOver( %game ); //Reset TeamBalance Notify
-	ResetVOall(%game); 	//Reset Everything to do with Vote Overtime
-	ResetClientChangedTeams(); 	//Reset GetCounts
-	$SetNextMissionRestore = ""; //Reset SetNextMission
-	MapRepetitionCheckerReset( %game ); //Reset MapRepetitionChecker
-	
+   }	
 }
 
 // CHANGE TEAM NAMES
@@ -133,10 +125,6 @@ function DefaultGame::assignClientTeam(%game, %client, %respawn )
    countArmorAllowed();
 
    logEcho(%client.nameBase@" (cl "@%client@") joined team "@%client.team);
-   
-   //Trigger GetCounts
-   ResetClientChangedTeams();
-   
 }
 
 function DefaultGame::clientJoinTeam( %game, %client, %team, %respawn )
@@ -492,9 +480,6 @@ function DefaultGame::forceObserver(%game, %client, %reason)
    
    // call the onEvent for this game type
    %game.onClientEnterObserverMode(%client);  //Bounty uses this to remove this client from others' hit lists 
-   
-   //Trigger GetCounts
-   ResetClientChangedTeams();
 }
 
 // DefaultGame::sendDebriefing(%game, %client)
