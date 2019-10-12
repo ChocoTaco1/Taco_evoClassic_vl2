@@ -2,80 +2,70 @@
 // sendModInfoToClient(%client)
 // Info: During the briefing, shows server settings (source: classic mod)
 function sendModInfoToClient(%client)
-{
-   //Color safetynet
-   if( !$ColorsafetynetRunonce )
-   {
-		if( $Host::loadingmsgcolor1 $= "" ) $Host::loadingmsgcolor1 = "05edad";
-		if( $Host::loadingmsgcolor2 $= "" ) $Host::loadingmsgcolor2 = "29DEE7";
-		if( $Host::loadingmsgcolor3 $= "" ) $Host::loadingmsgcolor3 = "33CCCC";
-		if( $Host::Info !$= " " ) 			$Host::Info = " ";
-		$ColorsafetynetRunonce = true;
-   }
-   
-   %loadingmsgline1 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline1 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline1content;
-   %loadingmsgline2 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline2 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline2content;
-   %loadingmsgline3 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline3 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline3content;
-   %loadingmsgline4 = "<color:" @ $Host::loadingmsgcolor1 @ ">" @ $Host::loadingmsgline4 @ "<color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::loadingmsgline4content;
+{  
+   %line1 = "<color:" @ $Host::LoadScreenColor1 @ ">" @ $Host::LoadScreenLine1 @ " <color:" @ $Host::LoadScreenColor2 @ ">" @ $Host::LoadScreenLine1_Msg;
+   %line2 = "<color:" @ $Host::LoadScreenColor1 @ ">" @ $Host::LoadScreenLine2 @ " <color:" @ $Host::LoadScreenColor2 @ ">" @ $Host::LoadScreenLine2_Msg;
+   %line3 = "<color:" @ $Host::LoadScreenColor1 @ ">" @ $Host::LoadScreenLine3 @ " <color:" @ $Host::LoadScreenColor2 @ ">" @ $Host::LoadScreenLine3_Msg;
+   %line4 = "<color:" @ $Host::LoadScreenColor1 @ ">" @ $Host::LoadScreenLine4 @ " <color:" @ $Host::LoadScreenColor2 @ ">" @ $Host::LoadScreenLine4_Msg;
    
    if($Host::TimeLimit $= "999" || $Host::TimeLimit $= "unlimited") %timeloadingvar = "Unlimited"; else %timeloadingvar = $Host::TimeLimit;
    
-   %time = "<color:" @ $Host::loadingmsgcolor1 @ ">Time limit: <color:" @ $Host::loadingmsgcolor2 @ ">" @ %timeloadingvar;
-   %max = "<color:" @ $Host::loadingmsgcolor1 @ ">Max players: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::MaxPlayers;
-   %net = "<color:" @ $Host::loadingmsgcolor1 @ ">Packets Rate / Size: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $pref::Net::PacketRateToClient @ " / " @ $pref::Net::PacketSize;
-   %smurf = "<color:" @ $Host::loadingmsgcolor1 @ ">Refuse smurfs: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::NoSmurfs ? "On" : "Off");
+   %time = "<color:" @ $Host::LoadScreenColor1 @ ">Time limit: <color:" @ $Host::LoadScreenColor2 @ ">" @ %timeloadingvar;
+   %max = "<color:" @ $Host::LoadScreenColor1 @ ">Max players: <color:" @ $Host::LoadScreenColor2 @ ">" @ $Host::MaxPlayers;
+   %net = "<color:" @ $Host::LoadScreenColor1 @ ">Packets Rate / Size: <color:" @ $Host::LoadScreenColor2 @ ">" @ $pref::Net::PacketRateToClient @ " / " @ $pref::Net::PacketSize;
+   %smurf = "<color:" @ $Host::LoadScreenColor1 @ ">Refuse smurfs: <color:" @ $Host::LoadScreenColor2 @ ">" @ ($Host::NoSmurfs ? "On" : "Off");
 
    
-   //%random = "<color:" @ $Host::loadingmsgcolor1 @ ">Random teams: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($RandomTeams ? "On" : "Off");
-   //%fair = "<color:" @ $Host::loadingmsgcolor1 @ ">Fair teams: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::ClassicFairTeams ? "On" : "Off");
-   //%rape = "<color:" @ $Host::loadingmsgcolor1 @ ">No Base Rape: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::EvoNoBaseRapeEnabled ? "On" : "Off");
-   //%td = "<color:" @ $Host::loadingmsgcolor1 @ ">Team damage: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::TeamDamageOn ? "On" : "Off");
-   //%crc = "<color:" @ $Host::loadingmsgcolor1 @ ">CRC checking: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::CRCTextures ? "On" : "Off");
-   //%pure = "<color:" @ $Host::loadingmsgcolor1 @ ">Pure server: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::PureServer ? "On" : "Off");
+   //%random = "<color:" @ $Host::LoadScreenColor1 @ ">Random teams: <color:" @ $Host::LoadScreenColor2 @ ">" @ ($RandomTeams ? "On" : "Off");
+   //%fair = "<color:" @ $Host::LoadScreenColor1 @ ">Fair teams: <color:" @ $Host::LoadScreenColor2 @ ">" @ ($Host::ClassicFairTeams ? "On" : "Off");
+   //%rape = "<color:" @ $Host::LoadScreenColor1 @ ">No Base Rape: <color:" @ $Host::LoadScreenColor2 @ ">" @ ($Host::EvoNoBaseRapeEnabled ? "On" : "Off");
+   //%td = "<color:" @ $Host::LoadScreenColor1 @ ">Team damage: <color:" @ $Host::LoadScreenColor2 @ ">" @ ($Host::TeamDamageOn ? "On" : "Off");
+   //%crc = "<color:" @ $Host::LoadScreenColor1 @ ">CRC checking: <color:" @ $Host::LoadScreenColor2 @ ">" @ ($Host::CRCTextures ? "On" : "Off");
+   //%pure = "<color:" @ $Host::LoadScreenColor1 @ ">Pure server: <color:" @ $Host::LoadScreenColor2 @ ">" @ ($Host::PureServer ? "On" : "Off");
 
 
    if($Host::EvoNoBaseRapeEnabled)
-   	%rapeppl = "<color:" @ $Host::loadingmsgcolor1 @ ">Min No Base Rape: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::EvoNoBaseRapeClassicPlayerCount;
+   	%rapeppl = "<color:" @ $Host::LoadScreenColor1 @ ">Min No Base Rape: <color:" @ $Host::LoadScreenColor2 @ ">" @ $Host::EvoNoBaseRapeClassicPlayerCount;
 
-   %turrets = "<color:" @ $Host::loadingmsgcolor1 @ ">Min Turrets: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $Host::EnableTurretPlayerCount;
+   %turrets = "<color:" @ $Host::LoadScreenColor1 @ ">Min Turrets: <color:" @ $Host::LoadScreenColor2 @ ">" @ $Host::EnableTurretPlayerCount;
    
    if($Host::EvoStats && (!$Host::TournamentMode || ($Host::TournamentMode && $Host::EvoStatsTourney)) && $Host::EvoStatsType != 0)
-      %stats = "<color:" @ $Host::loadingmsgcolor1 @ ">Stats based on: <color:" @ $Host::loadingmsgcolor2 @ ">" @ ($Host::EvoStatsType == 1 ? "Kills" : "Damage");
+      %stats = "<color:" @ $Host::LoadScreenColor1 @ ">Stats based on: <color:" @ $Host::LoadScreenColor2 @ ">" @ ($Host::EvoStatsType == 1 ? "Kills" : "Damage");
 	  
    if($Evo::ETMMode && $ETMmode::CurrentMap <= $ETMmode::Counter)
    {
-	  %nmis = "<color:" @ $Host::loadingmsgcolor1 @ ">Next mission: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $ETMmode::MapDisplayName[$ETMmode::CurrentMap];
+	  %nmis = "<color:" @ $Host::LoadScreenColor1 @ ">Next mission: <color:" @ $Host::LoadScreenColor2 @ ">" @ $ETMmode::MapDisplayName[$ETMmode::CurrentMap];
    }
    else
    {
-      %nmis = "<color:" @ $Host::loadingmsgcolor1 @ ">Next mission: <color:" @ $Host::loadingmsgcolor2 @ ">" @ findNextCycleMission();
+      %nmis = "<color:" @ $Host::LoadScreenColor1 @ ">Next mission: <color:" @ $Host::LoadScreenColor2 @ ">" @ findNextCycleMission();
 	  if ( $Host::ClassicRandomMissions )
 	  {
 		%nmis = %nmis SPC "(Random)";
 	  }
 	  if($Host::EvoTourneySameMap && $Host::TournamentMode)
 	  {
-		%nmis = "<color:" @ $Host::loadingmsgcolor1 @ ">Next mission: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $CurrentMission @ " (Same)";
+		%nmis = "<color:" @ $Host::LoadScreenColor1 @ ">Next mission: <color:" @ $Host::LoadScreenColor2 @ ">" @ $CurrentMission @ " (Same)";
 	  }
    }
    
 	// classic doesn't use a variable to print the version, it needs to be edited manually
    %modName = "";
    //%ModLine[0] = "<color:ffb734>Classic Developers: <color:29DEE7><a:PLAYER\tz0dd>z0dd</a> and <a:PLAYER\t-ZOD->ZOD</a>";
-   %ModLine[0] = "<spush><font:sui generis:22><color:" @ $Host::loadingmsgcolor2 @ "><just:center>CLASSIC<spop>";
+   %ModLine[0] = "<spush><font:sui generis:22><color:" @ $Host::LoadScreenColor2 @ "><just:center>CLASSIC<spop>";
    %ModLine[1] = "";
-   %ModLine[1] = "<spush><font:verdana bold:16><color:" @ $Host::loadingmsgcolor3 @ ">Version: <color:" @ $Host::loadingmsgcolor2 @ ">" @ $classicVersion @ "<spop>";
+   %ModLine[1] = "<spush><font:verdana bold:16><color:" @ $Host::LoadScreenColor3 @ ">Version: <color:" @ $Host::LoadScreenColor2 @ ">" @ $classicVersion @ "<spop>";
    %ModLine[3] = "";
-   %ModLine[4] = "<spush><font:verdana bold:16><color:" @ $Host::loadingmsgcolor3 @ ">Developers: <color:" @ $Host::loadingmsgcolor2 @ "><a:PLAYER\tz0dd>z0dd</a> <color:" @ $Host::loadingmsgcolor3 @ ">and <color:" @ $Host::loadingmsgcolor2 @ "><a:PLAYER\t-ZOD->ZOD</a><spop>";
+   %ModLine[4] = "<spush><font:verdana bold:16><color:" @ $Host::LoadScreenColor3 @ ">Developers: <color:" @ $Host::LoadScreenColor2 @ "><a:PLAYER\tz0dd>z0dd</a> <color:" @ $Host::LoadScreenColor3 @ ">and <color:" @ $Host::LoadScreenColor2 @ "><a:PLAYER\t-ZOD->ZOD</a><spop>";
    %ModLine[5] = "<just:left><font:univers:18>";
    
    %ModCnt = 6;
 
    %SpecialCnt = 4;
-   %SpecialTextLine[0] = %loadingmsgline1;
-   %SpecialTextLine[1] = %loadingmsgline2;
-   %SpecialTextLine[2] = %loadingmsgline3;
-   %SpecialTextLine[3] = %loadingmsgline4;
+   %SpecialTextLine[0] = %line1;
+   %SpecialTextLine[1] = %line2;
+   %SpecialTextLine[2] = %line3;
+   %SpecialTextLine[3] = %line4;
 
    %ServerCnt = 8;
    %ServerTextLine[0] = %time;
