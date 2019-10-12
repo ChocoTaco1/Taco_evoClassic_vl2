@@ -1064,7 +1064,9 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
                %str = "Switch to " @ getTaggedString( %game.getTeamName(%changeTo));
                %caseId = 5 + %changeTo;      
 
-               messageClient(%client, 'MsgPlayerPopupItem', "", %key, "ChangeTeam", "", %str, %caseId);
+               if(%isSuperAdmin || ($Host::EvoAdminSwitchTeams && %isAdmin))
+					messageClient(%client, 'MsgPlayerPopupItem', "", %key, "ChangeTeam", "", %str, %caseId);
+					
                // z0dd - ZOD, 7/11/03. Allow Super admins to force themselves to obs.
                if(%isTargetSelf)
 					messageClient( %client, 'MsgPlayerPopupItem', "", %key, "ToObserver", "", 'Force observer', 5 );
