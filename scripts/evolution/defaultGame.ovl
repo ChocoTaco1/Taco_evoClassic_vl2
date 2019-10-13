@@ -944,6 +944,7 @@ function DefaultGame::sendGamePlayerPopupMenu(%game, %client, %targetClient, %ke
    %isAdmin = (%client.isAdmin || %client.isSuperAdmin);
    %isTargetSelf = (%client == %targetClient);
    %isTargetAdmin = (%targetClient.isAdmin || %targetClient.isSuperAdmin);
+   %isSuperAdmin = (%client.isSuperAdmin);
    %isTargetBot = %targetClient.isAIControlled();
    %isTargetObserver = (%targetClient.team == 0);
    %outrankTarget = false;
