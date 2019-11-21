@@ -417,14 +417,24 @@ if($Host::EvoStats)
    //call the AI function
    %game.AIflagCap(%player, %flag);
 
+   %scoreLimit = MissionGroup.CTF_scoreLimit * %game.SCORE_PER_TEAM_FLAG_CAP;
+   	
+   if($TeamScore[%client.team] >= (%scoreLimit - 100))
+	   %gamepoint = 1;
+
    //if this cap didn't end the game, play the announcer...
    if($missionRunning)
    {
-   	 //classic uses only storm/inferno
-      if(%game.getTeamName(%client.team) $= 'Inferno' || ($Evo::ETMMode && (%otherTeam $= $ETMmode::Team[$ETMCMap, 2])))
-         messageAll("", '~wvoice/announcer/ann.infscores.wav');
-      else if(%game.getTeamName(%client.team) $= 'Storm' || ($Evo::ETMMode && (%otherTeam $= $ETMmode::Team[$ETMCMap, 1])))
-         messageAll("", '~wvoice/announcer/ann.stoscores.wav');
+   	  if(!%gamepoint)
+      {
+		  //classic uses only storm/inferno
+		  if(%game.getTeamName(%client.team) $= 'Inferno' || ($Evo::ETMMode && (%otherTeam $= $ETMmode::Team[$ETMCMap, 2])))
+			 messageAll("", '~wvoice/announcer/ann.infscores.wav');
+		  else if(%game.getTeamName(%client.team) $= 'Storm' || ($Evo::ETMMode && (%otherTeam $= $ETMmode::Team[$ETMCMap, 1])))
+			 messageAll("", '~wvoice/announcer/ann.stoscores.wav');
+	  }
+	  else
+		  messageAll("", '~wvoice/Announcer/ANN.gamepoint_imminent.WAV');
    }
    
 }
