@@ -282,23 +282,39 @@ function GameConnection::onDrop(%client, %reason)
 	   //$EvoNoBaseRape = 1;
 	//}
    //}
-   // Reset the server if everyone has left the game
    
-   if( $HostGamePlayerCount - $HostGameBotCount == 0 && $Host::EmptyServerReset && !$resettingServer && !$LoadingMission && !$TimedServerResetActive && $CurrentMissionType !$= $Host::MissionType )
-   {
-      if($Evo::ETMMode)
+   // Reset the server if everyone has left the game
+   if( $HostGamePlayerCount - $HostGameBotCount == 0 && $Host::EmptyServerReset && !$resettingServer && !$LoadingMission && $CurrentMissionType !$= $Host::MissionType )
+   {	
+	if($Evo::ETMMode)
 	{
 	   $Evo::ETMMode = false;
 	   ETMreset();
 	}  
+	// Timed Server Reset: $Host::EmptyServerReset = 1; --- Time in Minutes $Host::EmptyServerResetTime = 120;
+	if(isEventPending($EmptyServerResetSchedule)) 
+	{
+		error(formatTimeString("HH:nn:ss") SPC "Previous Timed Server Reset schedule cancelled..." );
+		cancel($EmptyServerResetSchedule);
+	}
 	
 	%resettime = $Host::EmptyServerResetTime * 60000;
 	if(%resettime <= 0) %resettime = 1;
-	schedule(%resettime, 0, "ResetServerTimed");
-	$TimedServerResetActive = true;
+	$EmptyServerResetSchedule = schedule(%resettime, 0, "ResetServerTimed");
 	error(formatTimeString("HH:nn:ss") SPC "Timed Server Reset schedule started..." );
-	
    }
+}
+
+
+function ResetServerTimed()
+{
+	if( $HostGamePlayerCount - $HostGameBotCount == 0 && $Host::EmptyServerReset && !$resettingServer && !$LoadingMission )
+      schedule(10, 0, "resetServerDefaults");
+	  // Instead of simply resetting the defaults, reinitialize the
+	  // entire server...
+	  // ReallyQuit();
+	else
+	  error(formatTimeString("HH:nn:ss") SPC "Timed Server Reset schedule cancelled (Someone on server)..." );
 }
 
 // loadMission( %missionName, %missionType, %firstMission )
