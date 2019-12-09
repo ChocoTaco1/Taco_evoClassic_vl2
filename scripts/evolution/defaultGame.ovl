@@ -1606,6 +1606,8 @@ function DefaultGame::voteChangeTimeLimit(%game, %admin, %newLimit)
 	  {
 		messageAll('MsgVoteFailed', '\c2The vote to change the mission time limit did not pass: %1 percent.', mFloor(%game.totalVotesFor/(ClientGroup.getCount() - $HostGameBotCount - %game.totalVotesNone) * 100));
 		ResetVOall(%game);
+		//called so the game can end with a failed timevote for voteovertime
+		DefaultGame::checkTimeLimit(%game, %forced);
 	  }
    }
 
