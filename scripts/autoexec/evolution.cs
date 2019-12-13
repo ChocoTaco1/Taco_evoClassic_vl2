@@ -15,6 +15,7 @@ exec("scripts/evolution/voteOptions.cs");
 exec("scripts/evolution/eTourney.cs");
 exec("scripts/evolution/stats.cs");
 exec("scripts/evolution/lease.cs");
+exec( $Host::EvoCustomMapLimitsFile );
 
 //
 // Purpose: Create our packaged function overloads and execute them.
