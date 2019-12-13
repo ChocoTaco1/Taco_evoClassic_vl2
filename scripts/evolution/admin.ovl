@@ -75,7 +75,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
 					}
                }
                playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting, true);
-			   $VoteSoundInProgress = true;
+			   
 			   %VoteSoundRandom = getRandom(1,100);
 			   $VoteSoundRandom = %VoteSoundRandom;
 			   $VoteSoundSchedule = schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
@@ -92,7 +92,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                   }
                }
                playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
-			   $VoteSoundInProgress = true;
+			   
 			   %VoteSoundRandom = getRandom(1,100);
 			   $VoteSoundRandom = %VoteSoundRandom;
 			   $VoteSoundSchedule = schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
@@ -171,7 +171,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
-			$VoteSoundInProgress = true;
+			
 			%VoteSoundRandom = getRandom(1,100);
 			$VoteSoundRandom = %VoteSoundRandom;
 			$VoteSoundSchedule = schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
@@ -200,7 +200,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
-			$VoteSoundInProgress = true;
+			
 			%VoteSoundRandom = getRandom(1,100);
 			$VoteSoundRandom = %VoteSoundRandom;
 			$VoteSoundSchedule = schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
@@ -292,7 +292,7 @@ function serverCmdStartNewVote(%client, %typeName, %arg1, %arg2, %arg3, %arg4, %
                }
             }
             playerStartNewVote(%client, %typename, %arg1, %arg2, %arg3, %arg4, %clientsVoting);
-			$VoteSoundInProgress = true;
+			
 			%VoteSoundRandom = getRandom(1,100);
 			$VoteSoundRandom = %VoteSoundRandom;
 			$VoteSoundSchedule = schedule(10000, 0, "VoteSound", %game, %typename, %arg1, %arg2, %VoteSoundRandom);
