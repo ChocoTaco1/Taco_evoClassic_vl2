@@ -15,7 +15,7 @@ function StaticShapeData::damageObject(%data, %targetObject, %sourceObject, %pos
 			return;
 		}
    }
-   else if(!$Host::TournamentMode && $Host::EvoNoBaseRapeEnabled && $Host::EvoNoBaseRapeClassicPlayerCount > $TotalTeamPlayerCount && $CurrentMissionType !$= "Siege")
+   else if(!$Host::TournamentMode && $Host::EvoNoBaseRapeEnabled && $Host::EvoNoBaseRapeClassicPlayerCount > $TotalTeamPlayerCount)
    {        		
 		if( %targetname $= "GeneratorLarge" || %targetname $= "StationInventory" || %targetname $= "SolarPanel" ) 
 		{
