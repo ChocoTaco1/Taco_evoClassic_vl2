@@ -1,12 +1,12 @@
 
 function StaticShapeData::damageObject(%data, %targetObject, %sourceObject, %position, %amount, %damageType)
 {
-	//echo( %targetObject.getDataBlock().getClassName() );
-	//echo( %targetObject.getDataBlock().getName() );
-	
+   //echo( %targetObject.getDataBlock().getClassName() );
+   //echo( %targetObject.getDataBlock().getName() );
+   
    %targetname = %targetObject.getDataBlock().getName();    
    
-      //Used on some maps to make invs invincible
+   //Used on some maps to make invs invincible
    if( $CurrentMission $= "SmallCrossing" || $CurrentMission $= "Bulwark")
    {
 		if( %targetObject.invincible && %targetname $= "StationInventory" )
@@ -15,7 +15,7 @@ function StaticShapeData::damageObject(%data, %targetObject, %sourceObject, %pos
 			return;
 		}
    }
-   else if(!$Host::TournamentMode && $Host::EvoNoBaseRapeEnabled && $Host::EvoNoBaseRapeClassicPlayerCount > $TotalTeamPlayerCount)
+   else if(!$Host::TournamentMode && $Host::EvoNoBaseRapeEnabled && $Host::EvoNoBaseRapeClassicPlayerCount > $TotalTeamPlayerCount && $CurrentMissionType !$= "Siege")
    {        		
 		if( %targetname $= "GeneratorLarge" || %targetname $= "StationInventory" || %targetname $= "SolarPanel" ) 
 		{
